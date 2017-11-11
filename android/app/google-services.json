@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "654153592201",
+    "firebase_url": "https://deepwork-648e0.firebaseio.com",
+    "project_id": "deepwork-648e0",
+    "storage_bucket": "deepwork-648e0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:654153592201:android:6819ed52b69978b6",
+        "android_client_info": {
+          "package_name": "com.deepwork"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "654153592201-0ajoo8ia6fgvi3s8kpno1vmonlo2ah8d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBj_KajvXgv-53L2dBfo0TnlGL-ek1P5FU"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
