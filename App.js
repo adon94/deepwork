@@ -1,9 +1,10 @@
 import { Navigation } from 'react-native-navigation';
 import { registerScreens } from './src/register';
+import { colors } from './src/constants';
 
 registerScreens();
 
-console.ignoredYellowBox = ['Remote debugger', 'Setting a timer'];
+console.ignoredYellowBox = ['Remote debugger', 'Setting a timer', 'Warning: Each child in an array'];
 
 // const mainScreen = 'app.MainView';
 // const mainScreen = 'app.Main';
@@ -13,7 +14,7 @@ const mainScreen = 'app.main'
 Navigation.startSingleScreenApp({
     screen: {
         screen: mainScreen, // unique ID registered with Navigation.registerScreen
-        navigatorStyle: { navBarHidden: true },//statusBarHidden: true }, // override the navigator style for the screen, see 'Styling the navigator' below (optional)
+        navigatorStyle: { navBarHidden: true, statusBarColor: colors.tigerOrange },//statusBarHidden: true }, // override the navigator style for the screen, see 'Styling the navigator' below (optional)
         navigatorButtons: {} // override the nav buttons for the screen, see 'Adding buttons to the navigator' below (optional)
     }
 });
