@@ -25,7 +25,7 @@ export default class FocusBoost extends Component {
         super(props);
 
         this.state = {
-            value: props.maxDuration/3600,
+            value: props.maxDuration > 1500 ? 0.41666 : props.maxDuration/3600,
             startHour: 18,
             startMinute: 30,
             showAlert: false,
@@ -101,10 +101,12 @@ export default class FocusBoost extends Component {
                 <View style={{ width: 250, marginVertical: 10 }}>
                     <Text style={styles.normalText}>Enable Focus Boost?</Text>
                     <Text style={styles.subText}>
-                        During a Focus Boost period, for every minute you spend outside of Tiger Time, you will lose one minute of your recorded time.
+                        During a Focus Boost period, for every second you spend outside of Tiger Time, you will lose one minute of your recorded time. No pausing either ;)
                     </Text>
-                    <Text style={styles.normalText}>{this.formatDuration(parseFloat(this.state.value).toFixed(3))}</Text>
-                    <Slider minimumValue={0.0833333}
+                    <Text style={styles.normalText}>
+                        {this.state.value != 0 ? this.formatDuration(parseFloat(this.state.value).toFixed(3)) : 'Off'}
+                    </Text>
+                    <Slider minimumValue={0}
                         step={0.0833333}
                         maximumValue={this.props.maxDuration/3600}
                         thumbTintColor={colors.tigerOrange}

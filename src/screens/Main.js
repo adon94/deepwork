@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import {
     Animated,
+    BackHandler,
     Dimensions,
     StyleSheet,
     Text,
@@ -8,6 +9,7 @@ import {
     View
 } from 'react-native';
 import Interactable from 'react-native-interactable';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 import { database } from '../firebase';
 import { colors } from '../constants';
@@ -39,8 +41,23 @@ export default class MainView extends Component {
     }
 
     _openSession(sesh) {
-        this.setState({ sessionPanel: <SessionTime session={sesh} blackout={() => this.blackout()} navigator={this.props.navigator} /> });
+        BackHandler.addEventListener('hardwareBackPress', () => {
+            if (this.state.playing) {
+                return true;
+            } else if(this.state.sessionPanel != null) {
+                this.closeSession();
+                return true;
+            }
+
+            return false;
+        });
+
+        this.setState({ sessionPanel: <SessionTime session={sesh} blackout={() => this.blackout()} /> });
         this.refs['sessionPanel'].snapTo({ index: 0 })
+    }
+
+    closeSession() {
+        this.refs['sessionPanel'].snapTo({ index: 1 })
     }
 
     blackout() {
@@ -49,11 +66,17 @@ export default class MainView extends Component {
                 toValue: 100,
                 duration: 1000
             }).start(this.setState({playing: true}));
+            this.props.navigator.setStyle({
+                statusBarHidden: true
+            });
         } else {
             Animated.timing(this._animatedValue, {
                 toValue: 0,
                 duration: 2000
             }).start(this.setState({playing: false}));
+            this.props.navigator.setStyle({
+                statusBarHidden: false
+            });
         }
     }
 
@@ -80,6 +103,9 @@ export default class MainView extends Component {
                                     }]}]}>
                     <Animated.View style={[styles.topBar]}>
                         <View style={{ flexDirection: 'row', width: Screen.width, justifyContent: 'center' }}>
+                            <View style={styles.iconContainer}>
+                                {/* <Icon name='ios-search' size={20} color='white' style={{alignSelf: 'center'}} /> */}
+                            </View>
                             <TouchableOpacity style={styles.titleButton} onPress={() => this.refs['tab'].snapTo({ index: 0 })}>
                                 <Animated.Text style={[styles.title, {
                                     transform: [{
@@ -131,6 +157,9 @@ export default class MainView extends Component {
                                     Team
                             </Animated.Text>
                             </TouchableOpacity>
+                            <View style={styles.iconContainer}>
+                                {/* <Icon name='ios-settings' size={20} color='white' style={{alignSelf: 'center'}} /> */}
+                            </View>
                         </View>
                     </Animated.View>
                     <Interactable.View
@@ -138,8 +167,8 @@ export default class MainView extends Component {
                         horizontalOnly={true}
                         snapPoints={[{ x: 0 }, { x: -Screen.width }, { x: -Screen.width * 2 }]}
                         initialPosition={{ x: -Screen.width }}
-                        style={{ width: Screen.width * 3, flex: 1, flexDirection: 'row',
-        elevation: 10 }}
+                        boundaries={{right: 50, left: (-Screen.width * 2)-50, haptics: true}}
+                        style={{ width: Screen.width * 3, flex: 1, flexDirection: 'row', elevation: 10 }}
                         animatedValueX={this._deltaX}
                         dragToss={0.1}>
                         <Animated.View style={[styles.viewContainer, {
@@ -150,10 +179,10 @@ export default class MainView extends Component {
                                 }),
                             }]
                         }, {
-                            opacity: this._deltaX.interpolate({
-                                inputRange: [-Screen.width * 2, -Screen.width, 0],
-                                outputRange: [0.6, 0.6, 1]
-                            })
+                            // opacity: this._deltaX.interpolate({
+                            //     inputRange: [-Screen.width * 2, -Screen.width, 0],
+                            //     outputRange: [0.6, 0.6, 1]
+                            // })
                         }]}>
                             <History />
                         </Animated.View>
@@ -165,10 +194,10 @@ export default class MainView extends Component {
                                 }),
                             }]
                         }, {
-                            opacity: this._deltaX.interpolate({
-                                inputRange: [-Screen.width * 2, -Screen.width, 0],
-                                outputRange: [0.6, 1, 0.6,]
-                            })
+                            // opacity: this._deltaX.interpolate({
+                            //     inputRange: [-Screen.width * 2, -Screen.width, 0],
+                            //     outputRange: [0.6, 1, 0.6,]
+                            // })
                         }]}>
                             <Timeline openSession={(session) => this._openSession(session)} />
                         </Animated.View>
@@ -180,10 +209,10 @@ export default class MainView extends Component {
                                 }),
                             }]
                         }, {
-                            opacity: this._deltaX.interpolate({
-                                inputRange: [-Screen.width * 2, -Screen.width, 0],
-                                outputRange: [1, 0.6, 0.6,]
-                            })
+                            // opacity: this._deltaX.interpolate({
+                            //     inputRange: [-Screen.width * 2, -Screen.width, 0],
+                            //     outputRange: [1, 0.6, 0.6,]
+                            // })
                         }]}>
                             <Team />
                         </Animated.View>
@@ -224,14 +253,16 @@ const styles = StyleSheet.create({
     },
     title: {
         color: 'white',
-        fontSize: 24,
+        fontSize: 20,
         fontWeight: 'bold',
         alignSelf: 'center'
     },
     titleButton: {
         alignSelf: 'center',
         justifyContent: 'center',
-        width: 110,
+        width: (Screen.width-80)/3,
+        // borderWidth: 1,
+        // borderColor: 'black'
     },
     viewContainer: {
         width: Screen.width,
@@ -258,5 +289,10 @@ const styles = StyleSheet.create({
         width: Screen.width,
         elevation: 16,
         justifyContent: 'flex-start'
-    }
+    },
+    iconContainer: {
+        width: 40, 
+        height: 50, 
+        justifyContent: 'center', 
+        alignItems: 'center'}
 });

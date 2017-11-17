@@ -36,8 +36,10 @@ node_modules/
 npm-debug.log
 yarn-error.log
 
-# firebase
+# Android
 google-services.json
+tt-release-key.keystore
+gradle.properties
 
 # BUCK
 buck-out/

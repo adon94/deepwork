@@ -5,7 +5,8 @@ export const colors = {
     tigerRGB: 'rgba(211, 84, 0, 1)',
     paleTiger: '#FF9550',
     background: '#FFFFFF',
-    gold: '#ffd700'
+    gold: '#ffd700',
+    noGoalIcon: 'ios-flash-outline'
 }
 
 export const formatSeconds = (seconds) => {

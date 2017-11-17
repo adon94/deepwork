@@ -69,6 +69,8 @@ export default class History extends Component {
                 goals.push(goal);
             })
 
+            goals.reverse();
+
             this.setState({ goals, totalMinutes })
         });
     }
@@ -104,7 +106,7 @@ export default class History extends Component {
                         <Text style={{ color: colors.tigerOrange, fontWeight: 'bold', fontSize: 18, marginRight: 2 }}>
                             {formatSeconds(this.state.totalMinutes)}
                         </Text>
-                        <Text style={{ color: colors.normalText, fontWeight: 'bold', fontSize: 18, marginLeft: 2 }}>saved</Text>
+                        <Text style={{ color: colors.normalText, fontWeight: 'bold', fontSize: 18, marginLeft: 2 }}>Hours</Text>
                     </View>
                 </View>
                 {this.state.goals.length > 0 ?

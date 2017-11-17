@@ -25,10 +25,14 @@ export default class TigerAlert extends Component {
     constructor(props) {
         super(props);
 
+        let now = moment();
+        const remainder = 15 - now.minute() % 15;
+        const rounded = moment(now).add(remainder, 'minutes');
+
         this.state = {
             value: 1,
-            startHour: 9,
-            startMinute: 30,
+            startHour: rounded.hour(),
+            startMinute: rounded.minute(),
             showAlert: false,
             goal: null,
             name: ''

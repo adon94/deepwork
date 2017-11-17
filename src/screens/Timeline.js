@@ -74,6 +74,20 @@ export default class Timeline extends Component {
 
                 data.push(session);
             })
+            
+            data.sort((a, b) => {
+                const startA = new Date(a.plannedStart).toLocaleTimeString();
+                const startB = new Date(b.plannedStart).toLocaleTimeString();
+
+                if (startA < startB) {
+                    return -1;
+                }
+                if (startA > startB) {
+                    return 1;
+                }
+
+                return 0;
+            });
 
             this.setState({ data })
         });
@@ -95,7 +109,6 @@ export default class Timeline extends Component {
 
     addSlot(session) {
         const userRef = database.ref('users/').child(this.state.id).child('sessions').push();
-
         userRef.set(session);
         this.closeAlert();
     }
@@ -127,6 +140,15 @@ export default class Timeline extends Component {
     }
     
     _flashPress() {
+        const now = new Date();
+
+        const session = {
+            date: now.toDateString(),
+            plannedStart: now.toISOString(),
+            plannedEnd: now.toISOString()
+        }
+
+        this._openSession(session)
         this._expandMenu();
     }
 
@@ -152,12 +174,12 @@ export default class Timeline extends Component {
     render() {
         const moveAdd = this._animatedValue.interpolate({
             inputRange: [0, 100],
-            outputRange: [0, -140],
+            outputRange: [0, -70],
             easing: Easing.linear
         });
-        const moveMiddle = this._animatedValue.interpolate({
+        const moveFlash = this._animatedValue.interpolate({
             inputRange: [0, 100],
-            outputRange: [0, -70]
+            outputRange: [0, -140]
         });
         const rotateMenu = this._animatedValue.interpolate({
             inputRange: [0, 100],
@@ -197,7 +219,7 @@ export default class Timeline extends Component {
                 </AnimatedTouchable>
                 <AnimatedTouchable onPress={() => this._flashPress()}
                     style={[styles.iconContainer, { position: 'absolute', alignSelf: 'flex-end', bottom: 25,
-                        transform: [{translateY: moveMiddle}]}]}>
+                        transform: [{translateY: moveFlash}]}]}>
                     <Icon name='ios-flash-outline' size={35} color={colors.normalText} />
                 </AnimatedTouchable>
                 {/* <AnimatedTouchable

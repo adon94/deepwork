@@ -23,14 +23,18 @@ export default class Bubble extends Component {
                 <TouchableOpacity onPress={() => this.props.openItem()}
                     onLongPress={() => this.props.showOptions()}
                     style={[styles.container, {height: this.props.size, width: this.props.size}]}>
-                    <Icon name={this.props.item.iconName != null ? this.props.item.iconName : 'ios-paw-outline'}
+                    <Icon name={this.props.item.iconName != null ? this.props.item.iconName : colors.noGoalIcon}
                         size={80}
-                        color={colors.normalText} />
+                        color={this.props.item.realEnd == null ? colors.normalText : colors.tigerOrange} />
                     {this.props.item.seshName != null ? <Text style={styles.normalText}>
                         {this.props.item.seshName}
                     </Text> : null}
-                    {this.props.item.plannedStart != null ? <Text style={styles.subText}>
-                        {moment(this.props.item.plannedStart).format('HH:mm')}-{moment(this.props.item.plannedEnd).format('HH:mm')}
+                    {this.props.item.plannedStart != null && this.props.item.realEnd == null ? <Text style={styles.subText}>
+                        {moment(this.props.item.plannedStart).format('HH:mm')}
+                        {this.props.item.plannedStart != this.props.item.plannedEnd ? '-'+moment(this.props.item.plannedEnd).format('HH:mm') : null}
+                    </Text> : null}
+                    {this.props.item.realEnd != null ? <Text style={[styles.subText, {color: colors.tigerOrange}]}>
+                        {moment(this.props.item.realStart).format('HH:mm')}-{moment(this.props.item.realEnd).format('HH:mm')}
                     </Text> : null}
                     {this.props.item.totalMinutes != null ? <Text style={styles.subText}>
                         {formatSeconds(this.props.item.totalMinutes)}</Text> : null}

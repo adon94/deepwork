@@ -87,7 +87,7 @@ export default class GoalSelect extends Component {
         <View style={{height: 1, width: Screen.width, backgroundColor: colors.subText, alignSelf: 'center', margin: 15}} />
         <TouchableOpacity style={styles.item} onPress={() => this.selectGoal(null)}>
             <View style={styles.iconContainer}>
-                <Icon name='ios-paw-outline' size={50} color={colors.normalText} style={{marginHorizontal: 10}} />
+                <Icon name={colors.noGoalIcon} size={50} color={colors.normalText} style={{marginHorizontal: 10}} />
             </View>
             <Text style={[styles.normalText, {marginHorizontal: 10}]}>None</Text>
         </TouchableOpacity>
