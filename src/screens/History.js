@@ -166,7 +166,7 @@ export default class History extends Component {
                         keyExtractor={item => item.key}
                         showsVerticalScrollIndicator={false}
                         style={[styles.flatList, {
-                            maxHeight: this.state.goals.length < 3 ? 159 * Math.round(this.state.goals.length/2) : 159
+                            height: 170
                         }]}
                         contentContainerStyle={{ justifyContent: 'center' }} />
                     <FlatList
@@ -174,7 +174,7 @@ export default class History extends Component {
                         keyExtractor={item => item.key}
                         renderItem={this._renderDay}
                         showsVerticalScrollIndicator={false}
-                        style={[styles.flatList]}
+                        style={[styles.flatList, {maxHeight: Screen.height - 170 - 115}]}
                         contentContainerStyle={{ justifyContent: 'center', alignItems: 'center' }} />
                     </View>
 
@@ -216,6 +216,6 @@ const styles = StyleSheet.create({
     },
     dayStyle: {
         width: Screen.width-30,
-        paddingVertical: 15
+        height: 80
     }
 });
