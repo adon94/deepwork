@@ -95,13 +95,10 @@ export default class History extends Component {
                         day.date = date;
                         day.sessions.push(session);
                         day.time = time;
-                        console.log(1)
                     } else if (day.date == date) {
-                        console.log(2)
                         day.sessions.push(session);
                         day.time = day.time + time;
                     } else {
-                        console.log(3)
                         days.push(day);
                         day = {};
                         day.key = Math.random() * (1000 - 0);
@@ -165,11 +162,11 @@ export default class History extends Component {
                     <FlatList
                         data={this.state.goals}
                         renderItem={this._renderGoal}
-                        numColumns={2}
+                        horizontal={true}
                         keyExtractor={item => item.key}
                         showsVerticalScrollIndicator={false}
                         style={[styles.flatList, {
-                            maxHeight: this.state.goals.length < 7 ? 159 * Math.round(this.state.goals.length/2) : 159 * 3
+                            maxHeight: this.state.goals.length < 3 ? 159 * Math.round(this.state.goals.length/2) : 159
                         }]}
                         contentContainerStyle={{ justifyContent: 'center' }} />
                     <FlatList
@@ -178,7 +175,7 @@ export default class History extends Component {
                         renderItem={this._renderDay}
                         showsVerticalScrollIndicator={false}
                         style={[styles.flatList]}
-                        contentContainerStyle={{ justifyContent: 'center' }} />
+                        contentContainerStyle={{ justifyContent: 'center', alignItems: 'center' }} />
                     </View>
 
                     : <NoHistory />}
@@ -210,6 +207,7 @@ const styles = StyleSheet.create({
     },
     flatList: {
         alignSelf: 'center',
+        width: Screen.width-30,
     },
     dateText: {
         fontSize: 18,
