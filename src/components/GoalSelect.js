@@ -82,7 +82,7 @@ export default class GoalSelect extends Component {
             <View style={styles.iconContainer}>
                 <Icon name='ios-add-circle-outline' size={50} color={colors.normalText} style={{marginHorizontal: 10}} />
             </View>
-            <Text style={[styles.normalText, {marginHorizontal: 10}]}>New Goal</Text>
+            <Text style={[styles.normalText, {marginHorizontal: 10}]}>New Category</Text>
         </TouchableOpacity>
         <View style={{height: 1, width: Screen.width, backgroundColor: colors.subText, alignSelf: 'center', margin: 15}} />
         <TouchableOpacity style={styles.item} onPress={() => this.selectGoal(null)}>
@@ -102,6 +102,8 @@ export default class GoalSelect extends Component {
     render() {
         return (
             <View style={[styles.alertBox]}>
+                <Text style={[styles.normalText, {textAlign: 'center'}]}>Select a category for this session</Text>
+                <View style={{height: 1, width: Screen.width-40, backgroundColor: colors.subText, alignSelf: 'center', margin: 15}} />
                 <FlatList
                     data={this.state.goals}
                     extraData={this.state}

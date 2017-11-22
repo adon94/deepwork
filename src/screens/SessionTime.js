@@ -316,12 +316,13 @@ export default class SessionTime extends Component {
                         : null}
                 </TouchableOpacity> : null}
 
-                <Animated.Text style={[styles.normalText, { color: textColorAnim, marginBottom: 0 }]}>
+                <Animated.Text style={[styles.normalText, { color: textColorAnim, marginTop: 15 }]}>
                     {this.state.completedTime && !this.state.countUp ? '+' : null}{formatSeconds(this.state.timer)}</Animated.Text>
                 {/* {this.state.completedTime ? <Animated.Text style={[styles.normalText, { color: textColorAnim, marginTop: 0 }]}>(overtime)</Animated.Text> : null} */}
 
-                {this.state.playing ? <TouchableOpacity disabled={this.state.focusMinutes > this.state.focusLogged} onPress={() => this.pauseSession()} style={{ height: 70, width: 70, alignItems: 'center', justifyContent: 'center' }}>
-                    {this.state.playing && this.state.focusMinutes <= this.state.focusLogged ? <Icon name='ios-pause-outline' size={50} color={colors.tigerOrange} /> : null}
+                {this.state.playing ? <TouchableOpacity disabled={this.state.focusMinutes > this.state.focusLogged} onPress={() => this.pauseSession()} 
+                    style={[styles.actionButton]}>
+                    {this.state.playing && this.state.focusMinutes <= this.state.focusLogged ? <Text style={[styles.normalText, {color: colors.tigerOrange}]}>Pause</Text> : null}
                 </TouchableOpacity> : null}
                 {this.state.session.realEnd == null ?
                     <View style={{ alignItems: 'center' }}>

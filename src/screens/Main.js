@@ -3,6 +3,7 @@ import {
     Animated,
     BackHandler,
     Dimensions,
+    Platform,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -23,6 +24,8 @@ const Screen = {
     height: Dimensions.get('window').height
 }
 
+const topBarHeight = Platform.OS === 'ios' ? 60 : 50;
+
 export default class MainView extends Component {
     constructor(props) {
         super(props);
@@ -38,6 +41,7 @@ export default class MainView extends Component {
     }
 
     componentWillMount() {
+        
     }
 
     _openSession(sesh) {
@@ -102,7 +106,7 @@ export default class MainView extends Component {
                                         }),
                                     }]}]}>
                     <Animated.View style={[styles.topBar]}>
-                        <View style={{ flexDirection: 'row', width: Screen.width, justifyContent: 'center' }}>
+                        <View style={{ flexDirection: 'row', width: Screen.width, justifyContent: 'center', alignItems: 'flex-end' }}>
                             <View style={styles.iconContainer}>
                                 {/* <Icon name='ios-search' size={20} color='white' style={{alignSelf: 'center'}} /> */}
                             </View>
@@ -244,7 +248,7 @@ const styles = StyleSheet.create({
         backgroundColor: colors.tigerOrange
     },
     topBar: {
-        height: 50,
+        height: topBarHeight,
         width: Screen.width,
         flexWrap: 'nowrap',
         flexDirection: 'row',
@@ -266,7 +270,7 @@ const styles = StyleSheet.create({
     },
     viewContainer: {
         width: Screen.width,
-        height: Screen.height - 50,
+        height: Screen.height - topBarHeight,
         borderTopLeftRadius: 10,
         borderTopRightRadius: 10,
         backgroundColor: 'white',
@@ -279,7 +283,7 @@ const styles = StyleSheet.create({
         width: Screen.width,
         position: 'absolute',
         marginLeft: 15,
-        borderTopWidth: 65,
+        borderTopWidth: topBarHeight + 15,
     },
     panel: {
         backgroundColor: colors.background,
@@ -288,11 +292,14 @@ const styles = StyleSheet.create({
         height: Screen.height + 500,
         width: Screen.width,
         elevation: 16,
+        shadowOffset:{  width: 0,  height: 0,  },
+        shadowColor: 'black',
+        shadowOpacity: 0.25,
         justifyContent: 'flex-start'
     },
     iconContainer: {
         width: 40, 
-        height: 50, 
+        height: Screen.height, 
         justifyContent: 'center', 
         alignItems: 'center'}
 });

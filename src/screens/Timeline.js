@@ -74,7 +74,7 @@ export default class Timeline extends Component {
 
                 data.push(session);
             })
-            
+
             data.sort((a, b) => {
                 const startA = new Date(a.plannedStart).toLocaleTimeString();
                 const startB = new Date(b.plannedStart).toLocaleTimeString();
@@ -118,27 +118,39 @@ export default class Timeline extends Component {
     }
 
     _renderSession = ({ item }) => (
-        <Bubble item={item} 
-            showOptions={() => this._showSessionOptions(item)} 
+        <Bubble key={item.key}
+            item={item}
+            showOptions={() => this._showSessionOptions(item)}
             openItem={() => this._openSession(item)}
             size={150} />
     );
 
-    _renderSeparator = () => (
-        <View style={{ width: 1, height: 20, backgroundColor: colors.tigerOrange, alignSelf: 'center' }} />
+    _renderSeparator = ({ item }) => (
+        <View key={Math.random() * (1000 - 0)} style={{ width: 1, height: 20, backgroundColor: colors.tigerOrange, alignSelf: 'center' }} />
+    );
+
+    _renderFooter = ({ item }) => (
+        <View>
+        <View key={Math.random() * (1000 - 0)} style={{ width: 1, height: 20, backgroundColor: colors.tigerOrange, alignSelf: 'center' }} />
+        <TouchableOpacity onPress={() => this._flashPress()}
+        style={[styles.iconContainer]}>
+            <Text style={[styles.normalText, {textAlign: 'center', fontWeight: 'bold'}]}>
+            Start Now</Text>
+        </TouchableOpacity>
+        </View>
     );
 
     _showSessionOptions(session) {
         this.alertToShow = <Options item={session} closeAlert={() => this.closeAlert()} />;
         this.setState({ showAlert: true })
     }
-    
+
     _addPress() {
         this.alertToShow = <TigerAlert addSlot={(session) => this.addSlot(session)} />;
         this._expandMenu();
         this.setState({ showAlert: true });
     }
-    
+
     _flashPress() {
         const now = new Date();
 
@@ -193,8 +205,9 @@ export default class Timeline extends Component {
                 <View style={styles.topRow}>
                     <Text style={styles.dateText}>{this.state.today}</Text>
                     {/* <View style={styles.topButtonsContainer}>
-                        <TouchableOpacity style={styles.iconContainer}>
-                            <Icon name='ios-settings' size={35} color={colors.normalText} />
+                        <TouchableOpacity onPress={() => this._addPress()}
+                            style={[styles.iconContainer]}>
+                            <Icon name='ios-time-outline' size={35} color={colors.normalText} />
                         </TouchableOpacity>
                     </View> */}
                 </View>
@@ -205,21 +218,26 @@ export default class Timeline extends Component {
                             renderItem={this._renderSession}
                             keyExtractor={item => item.key}
                             showsVerticalScrollIndicator={false}
-                            style={{ alignSelf: 'center', maxHeight: (this.state.data.length * 170) - 20, width: Screen.width }}
+                            style={{ alignSelf: 'center', maxHeight: (this.state.data.length * 170) - 20 + 80, width: Screen.width }}
                             contentContainerStyle={{ alignItems: 'center' }}
-                            ItemSeparatorComponent={this._renderSeparator} />
+                            ItemSeparatorComponent={this._renderSeparator}
+                            ListFooterComponent={this._renderFooter} />
                     </View> :
-                    <EmptyTimeline />}
-                <AnimatedTouchable onPress={() => this._addPress()}
-                    style={[styles.iconContainer, { position: 'absolute', alignSelf: 'flex-end', bottom: 25,
+                    <EmptyTimeline flashPress={() => this._flashPress()} />}
+                {/* <AnimatedTouchable onPress={() => this._addPress()}
+                    style={[styles.iconContainer, {
+                        position: 'absolute', alignSelf: 'flex-end', bottom: 25,
                         transform: [{
                             translateY: moveAdd
-                        }] }]}>
+                        }]
+                    }]}>
                     <Icon name='ios-add-outline' size={35} color={colors.normalText} />
                 </AnimatedTouchable>
                 <AnimatedTouchable onPress={() => this._flashPress()}
-                    style={[styles.iconContainer, { position: 'absolute', alignSelf: 'flex-end', bottom: 25,
-                        transform: [{translateY: moveFlash}]}]}>
+                    style={[styles.iconContainer, {
+                        position: 'absolute', alignSelf: 'flex-end', bottom: 25,
+                        transform: [{ translateY: moveFlash }]
+                    }]}>
                     <Icon name='ios-flash-outline' size={35} color={colors.normalText} />
                 </AnimatedTouchable>
                 {/* <AnimatedTouchable
@@ -228,13 +246,11 @@ export default class Timeline extends Component {
                             translateY: moveAdd
                         }] }]}>
                     <Icon name='ios-settings-outline' size={35} color={colors.normalText} />
-                </AnimatedTouchable> */}
-                <AnimatedTouchable onPress={() => this._expandMenu()}
-                    style={[styles.iconContainer, { position: 'absolute', alignSelf: 'flex-end', bottom: 25, zIndex: 10}]}>
-                    <AnimatedIcon name='ios-arrow-dropdown-outline' size={35} color={colors.normalText} style={{transform: [{
-                            rotate: rotateMenu
-                        }]}} />
-                </AnimatedTouchable>
+                    </AnimatedTouchable> */}
+                <TouchableOpacity onPress={() => this._addPress()}
+                    style={[styles.iconContainer, { position: 'absolute', alignSelf: 'flex-end', bottom: Platform.OS === 'ios'? 0:25, zIndex: 10 }]}>
+                    <Icon name='ios-time-outline' size={35} color={colors.normalText} />
+                </TouchableOpacity>
 
                 <Modal isVisible={this.state.showAlert}
                     onBackdropPress={() => this.setState({ showAlert: false })}
