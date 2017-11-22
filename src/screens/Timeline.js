@@ -131,12 +131,12 @@ export default class Timeline extends Component {
 
     _renderFooter = ({ item }) => (
         <View>
-        <View key={Math.random() * (1000 - 0)} style={{ width: 1, height: 20, backgroundColor: colors.tigerOrange, alignSelf: 'center' }} />
-        <TouchableOpacity onPress={() => this._flashPress()}
-        style={[styles.iconContainer]}>
-            <Text style={[styles.normalText, {textAlign: 'center', fontWeight: 'bold'}]}>
-            Start Now</Text>
-        </TouchableOpacity>
+            <View key={Math.random() * (1000 - 0)} style={{ width: 1, height: 20, backgroundColor: colors.tigerOrange, alignSelf: 'center' }} />
+            <TouchableOpacity onPress={() => this._flashPress()}
+            style={[styles.iconContainer, {height: 80, width: 80, borderRadius: 40, padding: 5}]}>
+                <Text style={[styles.normalText, {textAlign: 'center', fontWeight: 'bold'}]}>
+                Start Now</Text>
+            </TouchableOpacity>
         </View>
     );
 
@@ -218,7 +218,7 @@ export default class Timeline extends Component {
                             renderItem={this._renderSession}
                             keyExtractor={item => item.key}
                             showsVerticalScrollIndicator={false}
-                            style={{ alignSelf: 'center', maxHeight: (this.state.data.length * 170) - 20 + 80, width: Screen.width }}
+                            style={{ alignSelf: 'center', maxHeight: (this.state.data.length * 170) - 20 + 100, width: Screen.width }}
                             contentContainerStyle={{ alignItems: 'center' }}
                             ItemSeparatorComponent={this._renderSeparator}
                             ListFooterComponent={this._renderFooter} />

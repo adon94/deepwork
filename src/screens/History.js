@@ -43,19 +43,20 @@ export default class History extends Component {
             id,
             goals: [],
             totalMinutes: 0,
-            showAlert: false
+            showAlert: false,
+            days: []
         }
+        this.userRef = database.ref('users/').child(id);
         this.alertToShow = <Options />;
     }
 
     componentWillMount() {
         this.getGoalData();
+        this.getDays();
     }
 
     getGoalData() {
-        const userRef = database.ref('users/').child(this.state.id);
-
-        userRef.child('goals').on('value', (snapshot) => {
+        this.userRef.child('goals').on('value', (snapshot) => {
 
             let goals = [];
             let totalMinutes = 0
@@ -72,6 +73,48 @@ export default class History extends Component {
             goals.reverse();
 
             this.setState({ goals, totalMinutes })
+        });
+    }
+
+    getDays() {
+        let days = [];
+        this.userRef.child('sessions').orderByChild('realEnd').on('value', (snapshot) => {
+            let day = {key: null, date: null, time: 0, sessions: []}
+            snapshot.forEach(childSnapshot => {
+                if (childSnapshot.val().realEnd) {
+                    const realEndDate = new Date(childSnapshot.val().realEnd);
+                    const date = realEndDate.toDateString();
+
+                    const time = realEndDate - new Date(childSnapshot.val().realStart);
+
+                    let session = childSnapshot.val();
+                    session.key = childSnapshot.key;
+
+                    if (day.date == null) {
+                        day.key = Math.random() * (1000 - 0);
+                        day.date = date;
+                        day.sessions.push(session);
+                        day.time = time;
+                        console.log(1)
+                    } else if (day.date == date) {
+                        console.log(2)
+                        day.sessions.push(session);
+                        day.time = day.time + time;
+                    } else {
+                        console.log(3)
+                        days.push(day);
+                        day = {};
+                        day.key = Math.random() * (1000 - 0);
+                        day.date = date;
+                        day.time = time;
+                        day.sessions = [];
+                        day.sessions.push(session);
+                    }
+                }
+            });
+            days.push(day);
+            days.reverse();
+            this.setState({days});
         });
     }
 
@@ -97,6 +140,14 @@ export default class History extends Component {
         </View>
     );
 
+    _renderDay = ({ item }) => (
+        <View style={styles.dayStyle}>
+            <Text style={styles.dateText}>{item.date}</Text>
+            <Text>{item.sessions.length} sessions</Text>
+            <Text>{formatSeconds((item.time/60000))} hours total</Text>
+        </View>
+    );
+
     render() {
         return (
             <View style={styles.container}>
@@ -110,6 +161,7 @@ export default class History extends Component {
                     </View>
                 </View>
                 {this.state.goals.length > 0 ?
+                <View>
                     <FlatList
                         data={this.state.goals}
                         renderItem={this._renderGoal}
@@ -120,6 +172,15 @@ export default class History extends Component {
                             maxHeight: this.state.goals.length < 7 ? 159 * Math.round(this.state.goals.length/2) : 159 * 3
                         }]}
                         contentContainerStyle={{ justifyContent: 'center' }} />
+                    <FlatList
+                        data={this.state.days}
+                        keyExtractor={item => item.key}
+                        renderItem={this._renderDay}
+                        showsVerticalScrollIndicator={false}
+                        style={[styles.flatList]}
+                        contentContainerStyle={{ justifyContent: 'center' }} />
+                    </View>
+
                     : <NoHistory />}
 
                 <Modal isVisible={this.state.showAlert}
@@ -149,5 +210,14 @@ const styles = StyleSheet.create({
     },
     flatList: {
         alignSelf: 'center',
+    },
+    dateText: {
+        fontSize: 18,
+        color: colors.normalText,
+        fontWeight: 'bold'
+    },
+    dayStyle: {
+        width: Screen.width-30,
+        paddingVertical: 15
     }
 });

@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
         height: Screen.height + 500,
         width: Screen.width,
         elevation: 16,
-        shadowOffset:{  width: 0,  height: 0,  },
+        shadowOffset:{width: 0,  height: 0},
         shadowColor: 'black',
         shadowOpacity: 0.25,
         justifyContent: 'flex-start'
