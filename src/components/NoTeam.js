@@ -7,17 +7,27 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { colors } from '../constants';
+// import {GoogleSignin, GoogleSigninButton} from 'react-native-google-signin';
+import { auth } from '../firebase';
 
 export default class NoTeam extends Component {
     constructor(props) {
         super(props);
     }
 
+    _signIn() {
+        auth.signInWithPhoneNumber('+353866692603')
+        .then(confirmResult => {
+            console.log(confirmResult)
+        })// save confirm result to use with the manual verification code)
+        .catch(error => console.log(error));
+    }
+
     render() {
         return (
             <View style={{ flex: 1, justifyContent: 'flex-start', marginTop: 140 }}>
                 <Icon name='ios-people' size={50} color={colors.normalText} style={{ alignSelf: 'center', marginHorizontal: 1 }} />
-                <Text style={styles.teamExplain}>Connect with your team to decrease interruptions and synchronize your Deep Work</Text>
+                <Text style={styles.teamExplain}>Add your friends and colleagues to your Circle to decrease interruptions and synchronize your Deep Work</Text>
                 <View style={styles.actionButtonsContainer}>
                     {/* <TouchableOpacity style={styles.actionButton}>
                         <Text style={styles.actionText}>Create a team</Text>
@@ -25,9 +35,14 @@ export default class NoTeam extends Component {
                     <TouchableOpacity style={styles.actionButton}>
                         <Text style={styles.actionText}>Join a team</Text>
                     </TouchableOpacity> */}
-                    <View style={styles.actionButton}>
-                        <Text style={styles.actionText}>Coming soon</Text>
-                    </View>
+                    <TouchableOpacity onPress={() => this._signIn()} style={styles.actionButton}>
+                        <Text style={styles.actionText}>Sign in</Text>
+                    </TouchableOpacity>
+                    {/* <GoogleSigninButton
+                        style={{width: 48, height: 48}}
+                        size={GoogleSigninButton.Size.Wide}
+                        color={GoogleSigninButton.Color.Light}
+                        onPress={() => this._signIn()}/> */}
                 </View>
             </View>
         )

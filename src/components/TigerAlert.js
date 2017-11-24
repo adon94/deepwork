@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import {
+    DatePickerIOS,
     Dimensions,
+    Platform,
     StyleSheet,
     Slider,
     Text,
@@ -30,6 +32,7 @@ export default class TigerAlert extends Component {
         const rounded = moment(now).add(remainder, 'minutes');
 
         this.state = {
+            date: new Date(),
             value: 1,
             startHour: rounded.hour(),
             startMinute: rounded.minute(),
@@ -72,21 +75,23 @@ export default class TigerAlert extends Component {
     }
 
     async _openTimePicker() {
-        try {
-            const { action, hour, minute } = await TimePickerAndroid.open({
-                hour: this.state.startHour,
-                minute: this.state.startMinute,
-                is24Hour: true, // Will display '14:00'
-            });
-            if (action !== TimePickerAndroid.dismissedAction) {
-                // Selected hour (0-23), minute (0-59)
-                this.setState({
-                    startHour: hour,
-                    startMinute: minute
-                })
+        if (Platform.OS === 'android') {
+            try {
+                const { action, hour, minute } = await TimePickerAndroid.open({
+                    hour: this.state.startHour,
+                    minute: this.state.startMinute,
+                    is24Hour: true, // Will display '14:00'
+                });
+                if (action !== TimePickerAndroid.dismissedAction) {
+                    // Selected hour (0-23), minute (0-59)
+                    this.setState({
+                        startHour: hour,
+                        startMinute: minute
+                    })
+                }
+            } catch ({ code, message }) {
+                console.warn('Cannot open time picker', message);
             }
-        } catch ({ code, message }) {
-            console.warn('Cannot open time picker', message);
         }
     }
 
@@ -95,10 +100,21 @@ export default class TigerAlert extends Component {
         // console.log(moment.duration(this.state.value, 'hours'));
     }
 
+
+    _dateChange = (date) => {
+        this.setState({
+            date,
+            startHour: date.getHours(),
+            startMinute: date.getMinutes()
+        })
+    }
+
     _go() {
-        let plannedStart = new Date();
-        plannedStart.setHours(this.state.startHour);
-        plannedStart.setMinutes(this.state.startMinute);
+        let plannedStart = Platform.OS === 'android' ? new Date() : this.state.date;
+        if (Platform.OS === 'android') {
+            plannedStart.setHours(this.state.startHour);
+            plannedStart.setMinutes(this.state.startMinute);
+        }
 
         let plannedEnd = new Date(plannedStart);
         plannedEnd = moment(plannedEnd).add(this.state.value, 'h').toDate();
@@ -137,15 +153,22 @@ export default class TigerAlert extends Component {
                         value={this.state.value}
                         onValueChange={(value) => this._valueChange(value)} />
                 </View>
-                <Text style={styles.subText}>Starting at</Text>
                 <TouchableOpacity onPress={() => this._openTimePicker()}>
+                    <Text style={styles.subText}>Starting at</Text>
+                    {Platform.OS === 'ios' ? 
+                    <DatePickerIOS
+                        style={{width: Screen.width*.6}}
+                        date={this.state.date}
+                        mode="time"
+                        onDateChange={(date) => this._dateChange(date)}
+                        /> :
                     <Text style={styles.addText}>
                         {this.state.startHour > 9 ? this.state.startHour : '0' + this.state.startHour}:
                     {this.state.startMinute > 9 ? this.state.startMinute : '0' + this.state.startMinute}
-                    </Text>
+                    </Text>}
                 </TouchableOpacity>
-                <Text style={styles.subText}>Towards goal</Text>
                 <TouchableOpacity onPress={() => this.setState({showAlert: true})}>
+                    <Text style={styles.subText}>Towards goal</Text>
                     <Text style={styles.addText}>{this.state.goal == null ? 'None' : this.state.goal.name}</Text>
                 </TouchableOpacity>
                 <Text style={styles.subText}>Session title</Text>

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import {
     Animated,
+    AppState,
     Dimensions,
     StyleSheet,
     Slider,
@@ -58,12 +59,15 @@ export default class SessionTime extends Component {
             completedTime,
             countUp,
             pauseDuration: 0,
+            focusTimeLost: 0,
             timer: !completedTime ? (duration - timeLogged) : (timeLogged - duration),
             session: props.session,
             playing: false,
             interval: null,
             focusMinutes: null,
-            focusLogged: null
+            focusLogged: null,
+            appState: AppState.currentState,
+            lostFocus: false
         }
     }
 
@@ -97,11 +101,61 @@ export default class SessionTime extends Component {
                 timer: !completedTime ? (duration - timeLogged) : (timeLogged - duration),
                 session: nextProps.session,
                 pauseDuration: 0,
+                focusTimeLost: 0,
                 playing: false,
                 interval: null,
                 focusMinutes: null,
-                focusLogged: null
+                focusLogged: null,
+                appState: AppState.currentState,
+                lostFocus: false
             });
+        }
+    }
+
+    componentDidMount() {
+        AppState.addEventListener('change', this._handleAppStateChange);
+    }
+
+    componentWillUnmount() {
+        AppState.removeEventListener('change', this._handleAppStateChange);
+    }
+
+    _handleAppStateChange = (nextAppState) => {
+        // console.log(nextAppState);
+        // if(nextAppState === 'inactive' && this.state.playing) {
+        //     console.log(nextAppState);
+        // }
+
+        if (this.state.appState.match(/inactive|background/) && nextAppState === 'active' && this.state.paused) {
+          console.log('App has come to the foreground!')
+          this.props.blackout(false);
+          Animated.timing(this._animatedValue, {
+              toValue: 0,
+              duration: 2000
+          }).start();
+
+          if (this.state.lostFocus) {
+              const lostFocusTime = new Date() - new Date(this.state.pausedAt);
+            //   const secondsLost = (lostFocusTime/1000);
+              this.state.focusTimeLost = this.state.focusTimeLost + (lostFocusTime*10);
+              console.log('lost ', formatSeconds(this.state.focusLogged/1000))
+          }
+
+          this.setState({appState: nextAppState, lostFocus: false});
+        //   this.pauseSession();
+        } else if (nextAppState === 'inactive' && this.state.playing) {
+            clearInterval(this.state.interval);
+            console.log('focus boost: ', this.state.focusMinutes > this.state.focusLogged)
+            this.setState({ 
+                lostFocus: this.state.focusMinutes > this.state.focusLogged,
+                appState: nextAppState,
+                playing: false,
+                paused: true,
+                pausedAt: new Date().toISOString()
+            });
+        } else {
+            console.log('oops')
+            this.setState({appState: nextAppState});
         }
     }
 
@@ -128,7 +182,7 @@ export default class SessionTime extends Component {
         pauseDuration = resumedAt - new Date(this.state.pausedAt);
         this.state.pauseDuration = pauseDuration + this.state.pauseDuration;
         this.state.paused = false;
-        this.props.blackout();
+        this.props.blackout(true);
         Animated.timing(this._animatedValue, {
             toValue: 100,
             duration: 1000
@@ -136,13 +190,14 @@ export default class SessionTime extends Component {
     }
 
     blackout() {
-        this.props.blackout();
         if (!this.state.playing) {
+            this.props.blackout(true);
             Animated.timing(this._animatedValue, {
                 toValue: 100,
                 duration: 1000
             }).start(this.beginSession());
         } else {
+            this.props.blackout(false);
             Animated.timing(this._animatedValue, {
                 toValue: 0,
                 duration: 2000
@@ -153,7 +208,13 @@ export default class SessionTime extends Component {
     startTimer() {
         this.setState({ playing: true })
         this.state.interval = setInterval(() => {
-            let timeLogged = ((new Date() - new Date(this.state.session.realStart) - this.state.pauseDuration) / 1000);
+
+            let timeLogged = ((new Date() - new Date(this.state.session.realStart) - this.state.pauseDuration - this.state.focusTimeLost) / 1000);
+            
+            if (timeLogged < 0) {
+                timeLogged = 0;
+            }
+
             let timer = (this.state.duration - timeLogged);
 
             const focusLogged = timeLogged; // <- this is bad
@@ -191,8 +252,9 @@ export default class SessionTime extends Component {
     }
 
     pauseSession() {
+        console.log('doing a pause')
         clearInterval(this.state.interval);
-        this.props.blackout();
+        this.props.blackout(false);
         Animated.timing(this._animatedValue, {
             toValue: 0,
             duration: 2000
@@ -220,6 +282,7 @@ export default class SessionTime extends Component {
         })
 
         userRef.child('sessions').child(this.state.session.key).child('realEnd').set(realEnd);
+        userRef.child('sessions').child(this.state.session.key).child('timeLogged').set(this.state.timeLogged);
         this.state.session.realEnd = realEnd;
         let session = this.state.session;
         session.realEnd = realEnd;
@@ -322,7 +385,8 @@ export default class SessionTime extends Component {
 
                 {this.state.playing ? <TouchableOpacity disabled={this.state.focusMinutes > this.state.focusLogged} onPress={() => this.pauseSession()} 
                     style={[styles.actionButton]}>
-                    {this.state.playing && this.state.focusMinutes <= this.state.focusLogged ? <Text style={[styles.normalText, {color: colors.tigerOrange}]}>Pause</Text> : null}
+                    {this.state.playing && this.state.focusMinutes <= this.state.focusLogged ? <Text style={[styles.normalText, {color: colors.tigerOrange}]}>Pause</Text> : 
+                    <Text style={[styles.normalText, {color: colors.tigerOrange}]}>No Pausing</Text> }
                 </TouchableOpacity> : null}
                 {this.state.session.realEnd == null ?
                     <View style={{ alignItems: 'center' }}>
@@ -332,7 +396,7 @@ export default class SessionTime extends Component {
                             <Animated.Text style={[styles.normalText, { color: colors.tigerOrange, position: 'absolute', opacity: endAnim }]}>
                                 End</Animated.Text>
                         </AnimatedTouchable>
-                        {/* <TouchableOpacity disabled={this.state.playing} onPress={() => this._openFocusBoost()}>
+                        <TouchableOpacity disabled={this.state.playing} onPress={() => this._openFocusBoost()}>
                             {this.state.focusMinutes == null ?
 
                                 <Text style={[styles.normalText, { color: colors.tigerOrange }]}>
@@ -342,7 +406,7 @@ export default class SessionTime extends Component {
                                 <Text style={[styles.normalText, { color: colors.tigerOrange }]}>
                                     Focus Boost: {this.state.focusMinutes > this.state.focusLogged ? formatSeconds(this.state.focusMinutes - this.state.focusLogged) : 'Complete'}
                                 </Text>}
-                        </TouchableOpacity> */}
+                        </TouchableOpacity>
                         {this.state.focusMinutes != null ?
                             <Bar width={300}
                                 height={1}

@@ -80,12 +80,13 @@ export default class History extends Component {
         let days = [];
         this.userRef.child('sessions').orderByChild('realEnd').on('value', (snapshot) => {
             let day = {key: null, date: null, time: 0, sessions: []}
+            days = [];
             snapshot.forEach(childSnapshot => {
-                if (childSnapshot.val().realEnd) {
+                if (childSnapshot.val().timeLogged != null) {
                     const realEndDate = new Date(childSnapshot.val().realEnd);
                     const date = realEndDate.toDateString();
 
-                    const time = realEndDate - new Date(childSnapshot.val().realStart);
+                    const time = childSnapshot.val().timeLogged;
 
                     let session = childSnapshot.val();
                     session.key = childSnapshot.key;
@@ -109,7 +110,9 @@ export default class History extends Component {
                     }
                 }
             });
-            days.push(day);
+            if (day.key != null) {
+                days.push(day);
+            }
             days.reverse();
             this.setState({days});
         });
@@ -141,7 +144,7 @@ export default class History extends Component {
         <View style={styles.dayStyle}>
             <Text style={styles.dateText}>{item.date}</Text>
             <Text>{item.sessions.length} sessions</Text>
-            <Text>{formatSeconds((item.time/60000))} hours total</Text>
+            <Text>{formatSeconds((item.time/60))} hours total</Text>
         </View>
     );
 

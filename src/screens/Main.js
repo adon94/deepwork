@@ -56,7 +56,7 @@ export default class MainView extends Component {
             return false;
         });
 
-        this.setState({ sessionPanel: <SessionTime session={sesh} blackout={() => this.blackout()} /> });
+        this.setState({ sessionPanel: <SessionTime session={sesh} blackout={(black) => this.blackout(black)} /> });
         this.refs['sessionPanel'].snapTo({ index: 0 })
     }
 
@@ -64,8 +64,8 @@ export default class MainView extends Component {
         this.refs['sessionPanel'].snapTo({ index: 1 })
     }
 
-    blackout() {
-        if(!this.state.playing) {
+    blackout(black) {
+        if(!this.state.playing && black) {
             Animated.timing(this._animatedValue, {
                 toValue: 100,
                 duration: 1000
@@ -158,7 +158,7 @@ export default class MainView extends Component {
                                         outputRange: [1, 0.6, 0.6,]
                                     })
                                 }]}>
-                                    Team
+                                    Circle
                             </Animated.Text>
                             </TouchableOpacity>
                             <View style={styles.iconContainer}>

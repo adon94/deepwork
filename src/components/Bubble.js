@@ -24,7 +24,7 @@ export default class Bubble extends Component {
                     onLongPress={() => this.props.showOptions()}
                     style={[styles.container, {height: this.props.size, width: this.props.size}]}>
                     <Icon name={this.props.item.iconName != null ? this.props.item.iconName : colors.noGoalIcon}
-                        size={80}
+                        size={this.props.size/2}
                         color={this.props.item.realEnd == null ? colors.normalText : colors.tigerOrange} />
                     {this.props.item.seshName != null ? <Text style={styles.normalText}>
                         {this.props.item.seshName}

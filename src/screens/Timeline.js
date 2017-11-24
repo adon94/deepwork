@@ -134,7 +134,7 @@ export default class Timeline extends Component {
             <View key={Math.random() * (1000 - 0)} style={{ width: 1, height: 20, backgroundColor: colors.tigerOrange, alignSelf: 'center' }} />
             <TouchableOpacity onPress={() => this._flashPress()}
             style={[styles.iconContainer, {height: 80, width: 80, borderRadius: 40, padding: 5}]}>
-                <Text style={[styles.normalText, {textAlign: 'center', fontWeight: 'bold'}]}>
+                <Text style={[{textAlign: 'center', fontWeight: 'bold', color: colors.normalText}]}>
                 Start Now</Text>
             </TouchableOpacity>
         </View>

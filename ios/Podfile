@@ -8,6 +8,7 @@ target 'deepwork' do
   # Pods for deepwork
   pod 'Firebase/Core'
   pod 'Firebase/Database'
+  pod 'Firebase/Auth'
   pod 'Interactable', :path => '../node_modules/react-native-interactable'
   pod "yoga", :path => "../node_modules/react-native/ReactCommon/yoga"
   pod 'React', :path => '../node_modules/react-native', :subspecs => [
