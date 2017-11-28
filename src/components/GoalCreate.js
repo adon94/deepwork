@@ -13,7 +13,7 @@ import moment from 'moment';
 import deviceInfo from 'react-native-device-info';
 
 import { colors } from '../constants';
-import { database } from '../firebase';
+import { auth, database } from '../firebase';
 
 const Screen = {
     width: Dimensions.get('window').width,
@@ -79,7 +79,9 @@ export default class GoalCreate extends Component {
     )
 
     _donePress() {
+        const userKey = auth.currentUser.uid;
         const goal = {
+            userKey,
             name: this.state.name,
             iconName: this.state.iconName
         }

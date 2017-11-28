@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import io.invertase.firebase.RNFirebasePackage;
+import io.invertase.firebase.auth.RNFirebaseAuthPackage;
 import io.invertase.firebase.database.RNFirebaseDatabasePackage;
 
 public class MainApplication extends NavigationApplication {
@@ -37,7 +38,8 @@ public class MainApplication extends NavigationApplication {
             new RNDeviceInfo(),
             new Interactable(),
             new RNFirebasePackage(),
-            new RNFirebaseDatabasePackage()
+            new RNFirebaseDatabasePackage(),
+            new RNFirebaseAuthPackage()
     );
   }
 

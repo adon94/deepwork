@@ -15,7 +15,7 @@ import deviceInfo from 'react-native-device-info';
 import Modal from 'react-native-modal';
 
 import { colors } from '../constants';
-import { database } from '../firebase';
+import { auth, database } from '../firebase';
 import GoalCreate from './GoalCreate';
 
 const Screen = {
@@ -40,25 +40,39 @@ export default class GoalSelect extends Component {
     }
 
     getGoals() {
-        const userRef = database.ref('users/').child(this.state.id);
-        
-        userRef.child('goals').on('value', (snapshot) => {
-
+        const userkey = auth.currentUser.uid;
+        const goalRef = database.ref('goals').orderByChild('userKey').equalTo(userkey);
+        goalRef.on('value', (snapshot) => {
             let goals = [];
             snapshot.forEach(childSnapshot => {
                 let goal = childSnapshot.val();
                 goal.key = childSnapshot.key;
-
                 goals.push(goal);
             })
-
             this.setState({ goals })
         });
+        // const userRef = database.ref('users/').child(this.state.id);
+        
+        // userRef.child('goals').on('value', (snapshot) => {
+
+        //     let goals = [];
+        //     snapshot.forEach(childSnapshot => {
+        //         let goal = childSnapshot.val();
+        //         goal.key = childSnapshot.key;
+
+        //         goals.push(goal);
+        //     })
+
+        //     this.setState({ goals })
+        // });
     }
 
     addGoal(goal) {
-        const userRef = database.ref('users/').child(this.state.id).child('goals').push();
-        userRef.set(goal);
+        // const userRef = database.ref('users/').child(this.state.id).child('goals').push();
+        // userRef.set(goal);
+
+        const goalRef = database.ref('goals').push();
+        goalRef.set(goal)
 
         this.setState({showAlert: false})
     }

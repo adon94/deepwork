@@ -31,11 +31,12 @@ export default class Options extends Component {
     }
 
     deleteItem() {
-        let itemRef = database.ref('users').child(this.state.id);
         if (this.props.item.date != null) {
-            itemRef.child('sessions').child(this.props.item.key).remove();
+            const sessionRef = database.ref('sessions').child(this.props.item.key);
+            sessionRef.remove();
         } else {
-            itemRef.child('goals').child(this.props.item.key).remove();
+            const goalRef = database.ref('goals').child(this.props.item.key)
+            goalRef.remove();
         }
         this.props.closeAlert();
     }

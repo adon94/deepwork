@@ -143,7 +143,7 @@ export default class SessionTime extends Component {
 
           this.setState({appState: nextAppState, lostFocus: false});
         //   this.pauseSession();
-        } else if (nextAppState === 'inactive' && this.state.playing) {
+        } else if (nextAppState === 'background' && this.state.playing) {
             clearInterval(this.state.interval);
             console.log('focus boost: ', this.state.focusMinutes > this.state.focusLogged)
             this.setState({ 
@@ -178,6 +178,8 @@ export default class SessionTime extends Component {
     }
 
     resume() {
+        const userRef = database.ref('users');
+        userRef.child(this.state.session.userKey).child('playing').set(true)
         const resumedAt = new Date();
         pauseDuration = resumedAt - new Date(this.state.pausedAt);
         this.state.pauseDuration = pauseDuration + this.state.pauseDuration;
@@ -239,26 +241,34 @@ export default class SessionTime extends Component {
             const realStart = new Date().toISOString();
             this.state.session.realStart = realStart;
             this.state.resumeStart = realStart;
-            const userRef = database.ref('users/').child(this.state.id).child('sessions');
+
+            const sessionsRef = database.ref('sessions');
+
+            // const userRef = database.ref('users').child(this.state.id).child('sessions');
             if (this.state.session.key != null) {
-                userRef.child(this.state.session.key).child('realStart').set(realStart);
+                sessionsRef.child(this.state.session.key).child('realStart').set(realStart);
             } else {
-                const keyRef = userRef.push();
+                const keyRef = sessionsRef.push();
                 keyRef.set(this.state.session);
                 this.state.session.key = keyRef.key
             }
+            const userRef = database.ref('users');
+            userRef.child(this.state.session.userKey).child('playing').set(true);
+            userRef.child(this.state.session.userKey).child('currentSession').set(this.state.session.key);
         }
         this.startTimer()
     }
 
     pauseSession() {
-        console.log('doing a pause')
         clearInterval(this.state.interval);
         this.props.blackout(false);
         Animated.timing(this._animatedValue, {
             toValue: 0,
             duration: 2000
         }).start();
+
+        const userRef = database.ref('users');
+        userRef.child(this.state.session.userKey).child('playing').set(false)
 
         // const userRef = database.ref('users/').child(this.state.id);
         // userRef.child('sessions').child(this.state.session.key).child('pausedAt').set(session.realStart);
@@ -269,9 +279,10 @@ export default class SessionTime extends Component {
         clearInterval(this.state.interval);
         const realEnd = new Date().toISOString();
 
-        const userRef = database.ref('users/').child(this.state.id);
-        const goalTimeRef = userRef.child('goals').child(this.state.session.goalKey).child('totalMinutes');
-
+        // const userRef = database.ref('users/').child(this.state.id);
+        // const goalTimeRef = userRef.child('goals').child(this.state.session.goalKey).child('totalMinutes');
+        const sessionRef = database.ref('sessions');
+        const goalTimeRef = database.ref('goals').child(this.state.session.goalKey).child('totalMinutes');
         goalTimeRef.once('value', (snapshot) => {
             if (snapshot.val() == null) {
                 goalTimeRef.set(Math.round(this.state.timeLogged / 60))
@@ -279,14 +290,24 @@ export default class SessionTime extends Component {
                 const totalMinutes = snapshot.val() + (Math.round(this.state.timeLogged / 60));
                 goalTimeRef.set(totalMinutes)
             }
-        })
-
-        userRef.child('sessions').child(this.state.session.key).child('realEnd').set(realEnd);
-        userRef.child('sessions').child(this.state.session.key).child('timeLogged').set(this.state.timeLogged);
+        });
+        const userRef = database.ref('users');
+        userRef.child(this.state.session.userKey).child('playing').set(false);
+        userRef.child(this.state.session.userKey).child('currentSession').set(null);
+        userRef.child(this.state.session.userKey).child('totalMinutes').once('value', (snapshot) => {
+            if (snapshot.val() == null) {
+                userRef.child(this.state.session.userKey).child('totalMinutes').set(Math.round(this.state.timeLogged / 60));
+            } else {
+                const totalMinutes = snapshot.val() + (Math.round(this.state.timeLogged / 60));
+                userRef.child(this.state.session.userKey).child('totalMinutes').set(totalMinutes);
+            }
+        });
+        sessionRef.child(this.state.session.key).child('realEnd').set(realEnd);
+        sessionRef.child(this.state.session.key).child('timeLogged').set(this.state.timeLogged);
         this.state.session.realEnd = realEnd;
         let session = this.state.session;
         session.realEnd = realEnd;
-        this.setState({ session, playing: false })
+        this.setState({ session, playing: false });
     }
 
     _reset() {
@@ -294,6 +315,7 @@ export default class SessionTime extends Component {
         session.realEnd = null;
         session.realStart = null;
         const userRef = database.ref('users/').child(this.state.id);
+        //if you use reset again, update the refs below
         userRef.child('sessions').child(this.state.session.key).child('realStart').set(session.realStart);
         userRef.child('sessions').child(this.state.session.key).child('realEnd').set(session.realEnd);
         this.setState({
@@ -315,13 +337,22 @@ export default class SessionTime extends Component {
     }
 
     goalSelected(goal) {
-        const userRef = database.ref('users/').child(this.state.id);
         if (goal != null) {
             this.state.session.iconName = goal.iconName;
             this.state.session.goalKey = goal.key;
+            if (this.state.session.key != null) {
+                const sessionRef = database.ref('sessions').child(this.state.session.key);
+                sessionRef.child('iconName').set(goal.iconName);
+                sessionRef.child('goalKey').set(goal.key);
+            }
         } else {
-            userRef.child('sessions').child(this.state.session.key).child('iconName').set(null);
-            userRef.child('sessions').child(this.state.session.key).child('goalKey').set(null);
+            this.state.session.iconName = null;
+            this.state.session.goalKey = null;
+            if (this.state.session.key != null) {
+                const sessionRef = database.ref('sessions').child(this.state.session.key);
+                sessionRef.child('iconName').set(null);
+                sessionRef.child('goalKey').set(null);
+            }
         }
         this.setState({ showAlert: false })
     }

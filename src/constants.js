@@ -1,3 +1,7 @@
+import deviceInfo from 'react-native-device-info';
+
+export const id = deviceInfo.getUniqueID();
+
 export const colors = {
     normalText: '#444444',
     subText: '#AFAFAF',

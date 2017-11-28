@@ -23,7 +23,7 @@ import Modal from 'react-native-modal';
 
 import Level from '../components/Level';
 import { colors, formatSeconds } from '../constants';
-import { database } from '../firebase';
+import { auth, database } from '../firebase';
 import NoHistory from '../components/NoHistory';
 import Bubble from '../components/Bubble';
 import Options from '../components/Options';
@@ -50,13 +50,18 @@ export default class History extends Component {
         this.alertToShow = <Options />;
     }
 
-    componentWillMount() {
-        this.getGoalData();
-        this.getDays();
+    componentDidMount() {
+        if (auth.currentUser != null) {
+            const userKey = auth.currentUser.uid;
+            this.getGoalData(userKey);
+            this.getDays(userKey);
+        }
     }
 
-    getGoalData() {
-        this.userRef.child('goals').on('value', (snapshot) => {
+    getGoalData(userKey) {
+        const goalRef = database.ref('goals').orderByChild('userKey').equalTo(userKey);
+
+        goalRef.on('value', (snapshot) => {
 
             let goals = [];
             let totalMinutes = 0
@@ -76,19 +81,44 @@ export default class History extends Component {
         });
     }
 
-    getDays() {
+    getDays(userKey) {
         let days = [];
-        this.userRef.child('sessions').orderByChild('realEnd').on('value', (snapshot) => {
+        // this.userRef.child('sessions').orderByChild('realEnd').on('value', (snapshot) => {
+
+        const sessionsRef = database.ref('sessions').orderByChild('userKey').equalTo(userKey);
+        
+        sessionsRef.on('value', (snapshot) => {
+            let data = [];
+            snapshot.forEach(childSnapshot => {
+                let session = childSnapshot.val();
+                session.key = childSnapshot.key;
+
+                if (session.realEnd != null) {
+                    data.push(session);
+                }
+            })
+            data.sort((a, b) => {
+                const endA = new Date(a.realEnd).toISOString();
+                const endB = new Date(b.realEnd).toISOString();
+                if (endA < endB) {
+                    return -1;
+                }
+                if (endA > endB) {
+                    return 1;
+                }
+                return 0;
+            });
+
             let day = {key: null, date: null, time: 0, sessions: []}
             days = [];
-            snapshot.forEach(childSnapshot => {
-                if (childSnapshot.val().timeLogged != null) {
-                    const realEndDate = new Date(childSnapshot.val().realEnd);
+            data.forEach(childSnapshot => {
+                if (childSnapshot.timeLogged != null) {
+                    const realEndDate = new Date(childSnapshot.realEnd);
                     const date = realEndDate.toDateString();
 
-                    const time = childSnapshot.val().timeLogged;
+                    const time = childSnapshot.timeLogged;
 
-                    let session = childSnapshot.val();
+                    let session = childSnapshot;
                     session.key = childSnapshot.key;
 
                     if (day.date == null) {

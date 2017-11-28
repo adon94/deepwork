@@ -21,12 +21,13 @@ import Interactable from 'react-native-interactable';
 import moment from 'moment';
 import Modal from 'react-native-modal';
 
-import { database } from '../firebase';
+import { auth, database } from '../firebase';
 import { colors } from '../constants';
 import EmptyTimeline from '../components/EmptyTimeline';
 import TigerAlert from '../components/TigerAlert';
 import Bubble from '../components/Bubble';
 import Options from '../components/Options';
+import { getUserByDeviceID } from '../controllers/UserController';
 
 const Screen = {
     width: Dimensions.get('window').width,
@@ -45,7 +46,7 @@ export default class Timeline extends Component {
         this.state = {
             today,
             id,
-            data: [{ name: 'lol' }, { name: 'lol2' }],
+            data: [],
             showAlert: false
         }
 
@@ -56,60 +57,53 @@ export default class Timeline extends Component {
         this.closed = true;
     }
 
-    componentWillMount() {
-        this.getTodaysData();
-    }
-
-    getTodaysData() {
-        const today = new Date().toDateString();
-
-        const userRef = database.ref('users/').child(this.state.id);
-
-        userRef.child('sessions').orderByChild('date').equalTo(today).on('value', (snapshot) => {
-
-            let data = [];
-            snapshot.forEach(childSnapshot => {
-                let session = childSnapshot.val();
-                session.key = childSnapshot.key;
-
-                data.push(session);
-            })
-
-            data.sort((a, b) => {
-                const startA = new Date(a.plannedStart).toLocaleTimeString();
-                const startB = new Date(b.plannedStart).toLocaleTimeString();
-
-                if (startA < startB) {
-                    return -1;
-                }
-                if (startA > startB) {
-                    return 1;
-                }
-
-                return 0;
-            });
-
-            this.setState({ data })
+    componentDidMount() {
+        // const user = getUserByDeviceID();
+        // console.log(user);
+        auth.onAuthStateChanged((user) => {
+            this.getTodaysData();
         });
     }
 
-    findDeepWork() {
-        //find free slots in calendar (if calendar == connected)
-        const connected = false;
-        if (connected) {
-            //list available slots in array after current time in 15 minute intervals [{start: 9:00, end: 10:15}]...
-        } else {
+    getTodaysData() {
+        if (auth.currentUser != null) {
+            const userKey = auth.currentUser.uid;
+            const today = new Date().toDateString();
+            const seshRef = database.ref('sessions').orderByChild('date').equalTo(today+'_'+userKey);
+            seshRef.on('value', (snapshot) => {
+            // const userRef = database.ref('users/').child(this.state.id);
+            // userRef.child('sessions').orderByChild('date').equalTo(today).on('value', (snapshot) => {
+                let data = [];
+                snapshot.forEach(childSnapshot => {
+                    let session = childSnapshot.val();
+                    session.key = childSnapshot.key;
 
+                    data.push(session);
+                })
+                data.sort((a, b) => {
+                    const startA = new Date(a.plannedStart).toLocaleTimeString();
+                    const startB = new Date(b.plannedStart).toLocaleTimeString();
+
+                    if (startA < startB) {
+                        return -1;
+                    }
+                    if (startA > startB) {
+                        return 1;
+                    }
+
+                    return 0;
+                });
+                this.setState({ data })
+            });
         }
-
-        //check if times closer to the users routine times are free
-
-        //default length is based on users 'stamina', user can choose otherwise
     }
 
     addSlot(session) {
-        const userRef = database.ref('users/').child(this.state.id).child('sessions').push();
-        userRef.set(session);
+        // const userRef = database.ref('users').child(this.state.id).child('sessions').push();
+        // userRef.set(session);
+
+        const seshRef = database.ref('sessions').push();
+        seshRef.set(session);
         this.closeAlert();
     }
 
@@ -153,14 +147,17 @@ export default class Timeline extends Component {
 
     _flashPress() {
         const now = new Date();
+        const userKey = auth.currentUser.uid
 
         const session = {
-            date: now.toDateString(),
+            userKey,
+            goalKey: userKey,
+            date: now.toDateString()+'_'+userKey,
             plannedStart: now.toISOString(),
             plannedEnd: now.toISOString()
         }
 
-        this._openSession(session)
+        this._openSession(session);
         this._expandMenu();
     }
 
@@ -204,12 +201,6 @@ export default class Timeline extends Component {
             <View style={styles.container}>
                 <View style={styles.topRow}>
                     <Text style={styles.dateText}>{this.state.today}</Text>
-                    {/* <View style={styles.topButtonsContainer}>
-                        <TouchableOpacity onPress={() => this._addPress()}
-                            style={[styles.iconContainer]}>
-                            <Icon name='ios-time-outline' size={35} color={colors.normalText} />
-                        </TouchableOpacity>
-                    </View> */}
                 </View>
                 {this.state.data.length > 0 ?
                     <View style={{ flex: 1, padding: 15 }}>
@@ -224,29 +215,6 @@ export default class Timeline extends Component {
                             ListFooterComponent={this._renderFooter} />
                     </View> :
                     <EmptyTimeline flashPress={() => this._flashPress()} />}
-                {/* <AnimatedTouchable onPress={() => this._addPress()}
-                    style={[styles.iconContainer, {
-                        position: 'absolute', alignSelf: 'flex-end', bottom: 25,
-                        transform: [{
-                            translateY: moveAdd
-                        }]
-                    }]}>
-                    <Icon name='ios-add-outline' size={35} color={colors.normalText} />
-                </AnimatedTouchable>
-                <AnimatedTouchable onPress={() => this._flashPress()}
-                    style={[styles.iconContainer, {
-                        position: 'absolute', alignSelf: 'flex-end', bottom: 25,
-                        transform: [{ translateY: moveFlash }]
-                    }]}>
-                    <Icon name='ios-flash-outline' size={35} color={colors.normalText} />
-                </AnimatedTouchable>
-                {/* <AnimatedTouchable
-                    style={[styles.iconContainer, { position: 'absolute', alignSelf: 'flex-end', bottom: 25,
-                        transform: [{
-                            translateY: moveAdd
-                        }] }]}>
-                    <Icon name='ios-settings-outline' size={35} color={colors.normalText} />
-                    </AnimatedTouchable> */}
                 <TouchableOpacity onPress={() => this._addPress()}
                     style={[styles.iconContainer, { position: 'absolute', alignSelf: 'flex-end', bottom: Platform.OS === 'ios'? 0:25, zIndex: 10 }]}>
                     <Icon name='ios-time-outline' size={35} color={colors.normalText} />

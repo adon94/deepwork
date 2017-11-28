@@ -17,6 +17,7 @@ import Modal from 'react-native-modal';
 
 import { colors } from '../constants';
 import GoalSelect from './GoalSelect';
+import { auth } from '../firebase';
 
 const Screen = {
     width: Dimensions.get('window').width,
@@ -125,13 +126,16 @@ export default class TigerAlert extends Component {
             iconName = this.state.goal.iconName;
         }
 
+        const userKey = auth.currentUser.uid;
+
         const session = {
             plannedStart,
             plannedEnd,
             goalKey,
             iconName,
+            userKey,
             seshName: this.state.name,
-            date: new Date().toDateString()
+            date: new Date().toDateString()+'_'+userKey
         }
 
         this.props.addSlot(session);

@@ -8,19 +8,78 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import { colors } from '../constants';
 // import {GoogleSignin, GoogleSigninButton} from 'react-native-google-signin';
-import { auth } from '../firebase';
+import { auth, database } from '../firebase';
+import Modal from 'react-native-modal';
+import CircleAlert from './CircleAlert';
+import firebase from 'react-native-firebase';
+import deviceInfo from 'react-native-device-info';
 
 export default class NoTeam extends Component {
     constructor(props) {
         super(props);
+
+        this.state = {
+            id: deviceInfo.getUniqueID(),
+            showAlert: false
+        }
     }
 
     _signIn() {
-        auth.signInWithPhoneNumber('+353866692603')
-        .then(confirmResult => {
-            console.log(confirmResult)
-        })// save confirm result to use with the manual verification code)
-        .catch(error => console.log(error));
+        auth.signInWithEmailAndPassword('adam@tigertime.io', 'password').then(() => {
+            this.props.auth();
+        }).catch((error) => {
+            // Handle Errors here.
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            // ...
+        });
+    }
+
+    _signUpPress() {
+        this.setState({ showAlert: true });
+    }
+
+    _signUp(user) {
+        const userRef = database.ref('users').child(auth.currentUser.uid);
+        const credential = firebase.auth.EmailAuthProvider.credential(user.email, user.password);
+        auth.currentUser.linkWithCredential(credential).then((fuser) => {
+            userRef.child('displayName').set(user.displayName);
+            userRef.child('email').set(user.email);
+            this.props.auth();
+          }, (error) => {
+            console.log("Error upgrading anonymous account", error);
+          });
+
+        // auth.createUserWithEmailAndPassword(user.email, user.password)//.then(() => {
+            //none of the below is happening. not sure why
+            // this.props.auth(user);
+            // console.log("Did stuff")
+            // const actionCodeSettings = {
+            //     url: 'https://www.deepwork-648e0.firebaseapp.com' + auth.currentUser.email,
+            //     iOS: {
+            //         bundleId: 'org.reactjs.native.example.deepwork'
+            //     },
+            //     android: {
+            //         packageName: 'com.deepwork',
+            //         installApp: true,
+            //         minimumVersion: '12'
+            //     },
+            //     handleCodeInApp: true
+            // };
+            // auth.currentUser.sendEmailVerification(actionCodeSettings)
+            //     .catch((error) => {
+            //         // Error occurred. Inspect error.code.
+            //         console.log(error)
+            //     });
+
+        //})
+        // .catch(error => {
+        //     const errorCode = error.code;
+        //     const errorMessage = error.message;
+        // });
+
+        // console.log(cred);
+        this.setState({ showAlert: false });
     }
 
     render() {
@@ -36,13 +95,22 @@ export default class NoTeam extends Component {
                         <Text style={styles.actionText}>Join a team</Text>
                     </TouchableOpacity> */}
                     <TouchableOpacity onPress={() => this._signIn()} style={styles.actionButton}>
-                        <Text style={styles.actionText}>Sign in</Text>
+                        <Text style={styles.actionText}>Log in</Text>
                     </TouchableOpacity>
-                    {/* <GoogleSigninButton
-                        style={{width: 48, height: 48}}
-                        size={GoogleSigninButton.Size.Wide}
-                        color={GoogleSigninButton.Color.Light}
-                        onPress={() => this._signIn()}/> */}
+                    <TouchableOpacity onPress={() => this._signUpPress()} style={styles.actionButton}>
+                        <Text style={styles.actionText}>Sign up</Text>
+                    </TouchableOpacity>
+                    {/* <View style={styles.actionButton}>
+                        <Text style={styles.actionText}>Coming soon</Text>
+                    </View> */}
+
+                    <Modal isVisible={this.state.showAlert}
+                        onBackdropPress={() => this.setState({ showAlert: false })}
+                        onBackButtonPress={() => this.setState({ showAlert: false })}
+                        useNativeDriver={true}
+                        style={{ justifyContent: 'flex-end' }}>
+                        <CircleAlert authorize={(user) => this._signUp(user)} />
+                    </Modal>
                 </View>
             </View>
         )

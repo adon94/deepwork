@@ -12,7 +12,7 @@ import {
 import Interactable from 'react-native-interactable';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-import { database } from '../firebase';
+import { auth, database } from '../firebase';
 import { colors } from '../constants';
 import Timeline from './Timeline';
 import Team from './Team';
@@ -41,7 +41,17 @@ export default class MainView extends Component {
     }
 
     componentWillMount() {
-        
+        let user = auth.currentUser;
+        if (user == null) {
+            setTimeout(() => {
+                let user = auth.currentUser;
+                if (user == null) {
+                    auth.signInAnonymously().catch((error) => {
+                        console.log(error)
+                    });
+                }
+            }, 1000)
+        }
     }
 
     _openSession(sesh) {
