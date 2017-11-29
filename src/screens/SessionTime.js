@@ -244,7 +244,6 @@ export default class SessionTime extends Component {
 
             const sessionsRef = database.ref('sessions');
 
-            // const userRef = database.ref('users').child(this.state.id).child('sessions');
             if (this.state.session.key != null) {
                 sessionsRef.child(this.state.session.key).child('realStart').set(realStart);
             } else {
@@ -255,6 +254,8 @@ export default class SessionTime extends Component {
             const userRef = database.ref('users');
             userRef.child(this.state.session.userKey).child('playing').set(true);
             userRef.child(this.state.session.userKey).child('currentSession').set(this.state.session.key);
+            userRef.child(this.state.session.userKey).child('startedAt').set(realStart);
+            userRef.child(this.state.session.userKey).child('duration').set(this.state.duration);
         }
         this.startTimer()
     }
@@ -294,6 +295,8 @@ export default class SessionTime extends Component {
         const userRef = database.ref('users');
         userRef.child(this.state.session.userKey).child('playing').set(false);
         userRef.child(this.state.session.userKey).child('currentSession').set(null);
+        userRef.child(this.state.session.userKey).child('startedAt').set(null);
+        userRef.child(this.state.session.userKey).child('duration').set(null);
         userRef.child(this.state.session.userKey).child('totalMinutes').once('value', (snapshot) => {
             if (snapshot.val() == null) {
                 userRef.child(this.state.session.userKey).child('totalMinutes').set(Math.round(this.state.timeLogged / 60));

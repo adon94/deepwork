@@ -51,18 +51,19 @@ export default class History extends Component {
     }
 
     componentDidMount() {
-        if (auth.currentUser != null) {
-            const userKey = auth.currentUser.uid;
-            this.getGoalData(userKey);
-            this.getDays(userKey);
-        }
+        auth.onAuthStateChanged((user) => {
+            if (user != null) {
+                const userKey = user.uid;
+                this.getGoalData(userKey);
+                this.getDays(userKey);
+            }
+        });
     }
 
     getGoalData(userKey) {
         const goalRef = database.ref('goals').orderByChild('userKey').equalTo(userKey);
 
         goalRef.on('value', (snapshot) => {
-
             let goals = [];
             let totalMinutes = 0
             snapshot.forEach(childSnapshot => {

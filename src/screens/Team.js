@@ -25,6 +25,7 @@ import NoTeam from '../components/NoTeam';
 import firebase from 'react-native-firebase';
 import Modal from 'react-native-modal';
 import AddToCircle from '../components/AddToCircle';
+import moment from 'moment';
 
 const Screen = {
     width: Dimensions.get('window').width,
@@ -184,14 +185,24 @@ export default class Team extends Component {
     )
     
     _renderUser = (item) => (
-        <TouchableOpacity key={item.item.key} style={[styles.listItem, {justifyContent: 'space-between'}]} onPress={() => console.log(item)}>
+        <View key={item.item.key} style={[styles.listItem, {justifyContent: 'space-between'}]}>
             <Text style={[styles.normalText, { marginLeft: 10 }]}>
                 {item.item.displayName}
             </Text>
-            <View style={{flexDirection: 'row'}}>
-                <Icon name='ios-flash' color={item.item.playing ? colors.tigerOrange : 'green'} size={40} />
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                {item.item.playing ? <Text style={[styles.normalText, {fontSize: 14}]}>
+                    {moment(item.item.startedAt).format('HH:mm')}-
+                    {item.item.duration > 0 ? moment(item.item.startedAt).add(item.item.duration, 'minutes').format('HH:mm') : null}
+                    </Text>:null}
+                <TouchableOpacity style={{
+                    height: 40,
+                    width: 40,
+                    alignItems: 'center',
+                    justifyContent: 'center'}} onPress={() => console.log(item)}>
+                    <Icon name='ios-flash' color={item.item.playing ? colors.tigerOrange : 'green'} size={40} />
+                </TouchableOpacity>
             </View>
-        </TouchableOpacity>
+        </View>
     )
     
     _renderPendingUser = (item) => (
