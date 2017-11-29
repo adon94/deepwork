@@ -26,9 +26,9 @@ export default class CircleAlert extends Component {
         super(props);
 
         this.state = {
-            displayName: 'Adam',
-            email: 'adam@tigertime.io',
-            password: 'password'
+            displayName: '',
+            email: '',
+            password: ''
         }
     }
 
