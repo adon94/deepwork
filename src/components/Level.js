@@ -18,10 +18,10 @@ export default class Level extends Component {
             <View>
                 <View style={styles.container}>
                     <View style={styles.levelContainer}>
-                        <Text style={styles.levelText}>1</Text>
+                        <Text style={styles.levelText}>{this.props.level.level}</Text>
                     </View>
                     <View style={{ flexDirection: 'column', alignSelf: 'flex-end' }}>
-                        <Text style={styles.rankText}>Zen Rookie</Text>
+                        <Text style={styles.rankText}>{this.props.level.name}</Text>
                         <Bar progress={this.props.progress} width={100} color={colors.tigerOrange} style={styles.bar} />
                     </View>
                 </View>

@@ -42,6 +42,7 @@ export default class AddToCircle extends Component {
         userRef.once('value', (snapshot) => {
             let data = [];
             snapshot.forEach(childSnapshot => {
+                console.log(childSnapshot)
                 if(childSnapshot.val().displayName.toLowerCase().includes(searchVal.toLowerCase())
                     && childSnapshot.val().email != this.props.user.email) {
                     let user = childSnapshot.val();

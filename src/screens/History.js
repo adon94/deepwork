@@ -27,6 +27,7 @@ import { auth, database } from '../firebase';
 import NoHistory from '../components/NoHistory';
 import Bubble from '../components/Bubble';
 import Options from '../components/Options';
+import levels from '../data/levels';
 
 const Screen = {
     width: Dimensions.get('window').width,
@@ -44,7 +45,8 @@ export default class History extends Component {
             goals: [],
             totalMinutes: 0,
             showAlert: false,
-            days: []
+            days: [],
+            level: levels[0]
         }
         this.userRef = database.ref('users/').child(id);
         this.alertToShow = <Options />;
@@ -54,8 +56,34 @@ export default class History extends Component {
         auth.onAuthStateChanged((user) => {
             if (user != null) {
                 const userKey = user.uid;
+                this.getUserMinutes(userKey)
                 this.getGoalData(userKey);
                 this.getDays(userKey);
+            }
+        });
+    }
+
+    getUserMinutes(userKey) {
+        const userMinutesRef = database.ref('users').child(userKey).child('totalMinutes');
+
+        userMinutesRef.on('value', (snapshot) => {
+            const totalMinutes = snapshot.val();
+            if(totalMinutes != null) {
+                let level = levels[0];
+                let progress = 0
+                levels.every((element, index) => {
+                    if (element.minutes > totalMinutes) {
+                        level = levels[index-1];
+
+                        progress = (totalMinutes-level.minutes)/(element.minutes-level.minutes)
+                        console.log(progress);
+                        return false;
+                    } else {
+                        return true;
+                    }
+                    
+                })
+                this.setState({level, totalMinutes, progress})
             }
         });
     }
@@ -65,20 +93,16 @@ export default class History extends Component {
 
         goalRef.on('value', (snapshot) => {
             let goals = [];
-            let totalMinutes = 0
             snapshot.forEach(childSnapshot => {
                 let goal = childSnapshot.val();
                 goal.key = childSnapshot.key;
-                if (childSnapshot.val().totalMinutes != null) {
-                    totalMinutes = childSnapshot.val().totalMinutes + totalMinutes
-                }
 
                 goals.push(goal);
             })
 
             goals.reverse();
 
-            this.setState({ goals, totalMinutes })
+            this.setState({ goals })
         });
     }
 
@@ -182,8 +206,8 @@ export default class History extends Component {
     render() {
         return (
             <View style={styles.container}>
-                <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 10 }}>
-                    {/* <Level progress={0} /> */}
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                    <Level level={this.state.level} progress={this.state.progress} />
                     <View style={styles.loggedBox}>
                         <Text style={{ color: colors.tigerOrange, fontWeight: 'bold', fontSize: 18, marginRight: 2 }}>
                             {formatSeconds(this.state.totalMinutes)}

@@ -271,8 +271,6 @@ export default class SessionTime extends Component {
         const userRef = database.ref('users');
         userRef.child(this.state.session.userKey).child('playing').set(false)
 
-        // const userRef = database.ref('users/').child(this.state.id);
-        // userRef.child('sessions').child(this.state.session.key).child('pausedAt').set(session.realStart);
         this.setState({ playing: false, paused: true, pausedAt: new Date().toISOString() })
     }
 
@@ -280,16 +278,17 @@ export default class SessionTime extends Component {
         clearInterval(this.state.interval);
         const realEnd = new Date().toISOString();
 
-        // const userRef = database.ref('users/').child(this.state.id);
-        // const goalTimeRef = userRef.child('goals').child(this.state.session.goalKey).child('totalMinutes');
         const sessionRef = database.ref('sessions');
-        const goalTimeRef = database.ref('goals').child(this.state.session.goalKey).child('totalMinutes');
-        goalTimeRef.once('value', (snapshot) => {
+        const goalRef = database.ref('goals').child(this.state.session.goalKey);
+        goalRef.child('totalMinutes').once('value', (snapshot) => {
             if (snapshot.val() == null) {
-                goalTimeRef.set(Math.round(this.state.timeLogged / 60))
+                goalRef.child('totalMinutes').set(Math.round(this.state.timeLogged / 60))
+                if (this.state.session.goalKey == this.state.session.userKey) {
+                    goalRef.child('userKey').set(this.state.session.userKey)
+                }
             } else {
                 const totalMinutes = snapshot.val() + (Math.round(this.state.timeLogged / 60));
-                goalTimeRef.set(totalMinutes)
+                goalRef.child('totalMinutes').set(totalMinutes)
             }
         });
         const userRef = database.ref('users');

@@ -119,14 +119,16 @@ export default class TigerAlert extends Component {
 
         let plannedEnd = new Date(plannedStart);
         plannedEnd = moment(plannedEnd).add(this.state.value, 'h').toDate();
+        const userKey = auth.currentUser.uid;
         let goalKey = null;
         let iconName = null;
         if (this.state.goal != null) {
             goalKey = this.state.goal.key;
             iconName = this.state.goal.iconName;
+        } else {
+            goalKey = userKey;
         }
 
-        const userKey = auth.currentUser.uid;
 
         const session = {
             plannedStart,

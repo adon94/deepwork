@@ -72,12 +72,12 @@ export default class Team extends Component {
             userB: user.email,
             pending: user.email
         }
-        console.log(user)
 
         const relationshipRef = database.ref('relationships').push();
         relationshipRef.set(relationship);
 
         this.setState({ showAlert: false })
+        this.getRelationships(this.state.user);
     }
 
     getRelationships(user) {
@@ -86,7 +86,6 @@ export default class Team extends Component {
         this.state.pending = [];
 
         let friendEmails = [];
-        let friends = [];
         let pendingEmails = []; // user can accept them
         let requestedEmails = []; // user requested them
         const relationshipRef = database.ref('relationships');
@@ -105,40 +104,42 @@ export default class Team extends Component {
                     pendingEmails.push(friendEmail);
                 }
             });
-            relationshipRef.orderByChild('userB').equalTo(user.email).once('value', (snapshot) => {
-                snapshot.forEach(childSnapshot => {
-                    const friendEmail = { 
-                        email: childSnapshot.val().userA,
-                        key: childSnapshot.key
-                    };
-                    const pending = childSnapshot.val().pending;
-                    if (pending == null) {
-                        friendEmails.push(friendEmail);
-                    } else if (pending == friendEmail) {
-                        requestedEmails.push(friendEmail);
-                    } else {
-                        pendingEmails.push(friendEmail);
-                    }
-                    this.getFriendsByEmails(friendEmails, this.state.friends);
-                    this.getFriendsByEmails(requestedEmails, this.state.requested);
-                    this.getFriendsByEmails(pendingEmails, this.state.pending);
-                });
-            })
+            this.getFriendsByEmails(friendEmails, this.state.friends);
+            this.getFriendsByEmails(requestedEmails, this.state.requested);
+            this.getFriendsByEmails(pendingEmails, this.state.pending);
         });
+
+        relationshipRef.orderByChild('userB').equalTo(user.email).once('value', (snapshot) => {
+            snapshot.forEach(childSnapshot => {
+                const friendEmail = { 
+                    email: childSnapshot.val().userA,
+                    key: childSnapshot.key
+                };
+                const pending = childSnapshot.val().pending;
+                if (pending == null) {
+                    friendEmails.push(friendEmail);
+                } else if (pending == friendEmail) {
+                    requestedEmails.push(friendEmail);
+                } else {
+                    pendingEmails.push(friendEmail);
+                }
+            });
+            this.getFriendsByEmails(friendEmails, this.state.friends);
+            this.getFriendsByEmails(requestedEmails, this.state.requested);
+            this.getFriendsByEmails(pendingEmails, this.state.pending);
+        })
     }
 
     getFriendsByEmails(emails, arr) {
         let friends = [];
         emails.forEach(element => {
-            console.log(element)
             const userRef = database.ref('users');
-            userRef.orderByChild('email').equalTo(element.email).on('value', (snapshot) => { //just gets one user 
+            userRef.orderByChild('email').equalTo(element.email).on('value', (snapshot) => {
                 snapshot.forEach(childSnapshot => {
                     let friend = childSnapshot.val();
                     friend.key = childSnapshot.key;
                     friend.relKey = element.key
                     console.log(friend)
-                    // friends.push(friend);
                     this.updateUserInList(friend, arr);
                 });
                 this.setState(this.state)
@@ -165,7 +166,6 @@ export default class Team extends Component {
     }
 
     acceptPendingRequest(user) {
-        console.log(user)
         const relationshipRef = database.ref('relationships');
         relationshipRef.child(user.relKey).child('pending').set(null);
         this.getRelationships(this.state.user);
@@ -199,7 +199,8 @@ export default class Team extends Component {
                     width: 40,
                     alignItems: 'center',
                     justifyContent: 'center'}} onPress={() => console.log(item)}>
-                    <Icon name='ios-flash' color={item.item.playing ? colors.tigerOrange : 'green'} size={40} />
+                    <Icon name={item.item.playing ? 'ios-flash' : colors.noGoalIcon} 
+                        color={item.item.playing ? colors.tigerOrange : colors.normalText} size={40} />
                 </TouchableOpacity>
             </View>
         </View>
@@ -265,7 +266,7 @@ export default class Team extends Component {
                             ListFooterComponent={this.renderFooter}
                             ItemSeparatorComponent={this._renderSeparator}                         
                             showsVerticalScrollIndicator={false}
-                            style={[styles.flatList]}
+                            style={[styles.flatList, {maxHeight: (this.state.friends.length+2)*50}]}
                             contentContainerStyle={{ justifyContent: 'center', alignItems: 'center' }} />
                         {this.state.pending.length > 0 ? 
                         <FlatList data={this.state.pending}
@@ -273,7 +274,7 @@ export default class Team extends Component {
                             renderItem={this._renderPendingUser}
                             ListHeaderComponent={this._renderPendingHeader}
                             showsVerticalScrollIndicator={false}
-                            style={[styles.flatList]}
+                            style={[styles.flatList, {maxHeight: (this.state.pending.length+2)*50}]}
                             contentContainerStyle={{ justifyContent: 'center', alignItems: 'center' }} /> : null}
                         {this.state.requested.length > 0 ? 
                         <FlatList data={this.state.requested}
@@ -281,7 +282,7 @@ export default class Team extends Component {
                             renderItem={this._renderRequestedUser}
                             ListHeaderComponent={this._renderRequestedHeader}
                             showsVerticalScrollIndicator={false}
-                            style={[styles.flatList]}
+                            style={[styles.flatList, {maxHeight: (this.state.requested.length+2)*50}]}
                             contentContainerStyle={{ justifyContent: 'center', alignItems: 'center' }} /> : null}
                         </View>
                     </View>}
