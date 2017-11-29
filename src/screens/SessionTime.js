@@ -17,7 +17,7 @@ import { Circle, Bar } from 'react-native-progress';
 import Modal from 'react-native-modal';
 
 import { colors, formatSeconds } from '../constants';
-import { database } from '../firebase';
+import { database, auth } from '../firebase';
 import FocusBoost from '../components/FocusBoost';
 import GoalSelect from '../components/GoalSelect';
 
@@ -154,7 +154,6 @@ export default class SessionTime extends Component {
                 pausedAt: new Date().toISOString()
             });
         } else {
-            console.log('oops')
             this.setState({appState: nextAppState});
         }
     }
@@ -238,6 +237,14 @@ export default class SessionTime extends Component {
 
     beginSession() {
         if (!this.state.paused) {
+
+            if (this.state.session.userKey == null) {
+                auth.signInAnonymously().catch((error) => {
+                    console.log(error)
+                });
+                this.state.session.userKey = auth.currentUser.uid;
+            }
+            
             const realStart = new Date().toISOString();
             this.state.session.realStart = realStart;
             this.state.resumeStart = realStart;

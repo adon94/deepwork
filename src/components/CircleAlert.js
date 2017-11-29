@@ -45,7 +45,7 @@ export default class CircleAlert extends Component {
     render() {
         return (
             <View style={[styles.alertBox]}>
-                <Text style={styles.subText}>Display Name</Text>
+                {this.props.signup ? <View><Text style={styles.subText}>Display Name</Text>
                 <TextInput
                     ref='input'
                     style={[styles.addText, { width: 200, margin: 5 }]}
@@ -54,7 +54,7 @@ export default class CircleAlert extends Component {
                     placeholder='Email'
                     autoCapitalize='none'
                     value={this.state.displayName}
-                    onChangeText={displayName => this.setState({ displayName })} />
+                    onChangeText={displayName => this.setState({ displayName })} /></View> : null}
                 <Text style={styles.subText}>Email</Text>
                 <TextInput
                     ref='input'

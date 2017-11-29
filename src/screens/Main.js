@@ -41,17 +41,6 @@ export default class MainView extends Component {
     }
 
     componentWillMount() {
-        let user = auth.currentUser;
-        if (user == null) {
-            setTimeout(() => {
-                let user = auth.currentUser;
-                if (user == null) {
-                    auth.signInAnonymously().catch((error) => {
-                        console.log(error)
-                    });
-                }
-            }, 1000)
-        }
     }
 
     _openSession(sesh) {

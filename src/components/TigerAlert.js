@@ -119,6 +119,11 @@ export default class TigerAlert extends Component {
 
         let plannedEnd = new Date(plannedStart);
         plannedEnd = moment(plannedEnd).add(this.state.value, 'h').toDate();
+        if (auth.currentUser == null) {
+            auth.signInAnonymously().catch((error) => {
+                console.log(error)
+            });
+        }
         const userKey = auth.currentUser.uid;
         let goalKey = null;
         let iconName = null;
@@ -128,7 +133,6 @@ export default class TigerAlert extends Component {
         } else {
             goalKey = userKey;
         }
-
 
         const session = {
             plannedStart,

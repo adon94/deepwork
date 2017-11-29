@@ -41,6 +41,7 @@ export default class Team extends Component {
         this.state = {
             id,
             showAlert: false,
+            showOptions: false,
             user: null,
             friends: [],
             requested: [],
@@ -56,9 +57,14 @@ export default class Team extends Component {
         });
     }
 
+    signOut() {
+        auth.signOut();
+        this.setState({showOptions: false})
+    }
+
     _checkUser() {
         const user = auth.currentUser
-        if (user!=null) {
+        if (user != null) {
             this.setState({ user });
             this.getRelationships(user);
         } else {
@@ -91,7 +97,7 @@ export default class Team extends Component {
         const relationshipRef = database.ref('relationships');
         relationshipRef.orderByChild('userA').equalTo(user.email).once('value', (snapshot) => {
             snapshot.forEach(childSnapshot => {
-                const friendEmail = { 
+                const friendEmail = {
                     email: childSnapshot.val().userB,
                     key: childSnapshot.key
                 };
@@ -111,7 +117,7 @@ export default class Team extends Component {
 
         relationshipRef.orderByChild('userB').equalTo(user.email).once('value', (snapshot) => {
             snapshot.forEach(childSnapshot => {
-                const friendEmail = { 
+                const friendEmail = {
                     email: childSnapshot.val().userA,
                     key: childSnapshot.key
                 };
@@ -183,45 +189,46 @@ export default class Team extends Component {
             <Text style={[styles.normalText, { marginLeft: 10 }]}>Add</Text>
         </TouchableOpacity>
     )
-    
+
     _renderUser = (item) => (
-        <View key={item.item.key} style={[styles.listItem, {justifyContent: 'space-between'}]}>
+        <View key={item.item.key} style={[styles.listItem, { justifyContent: 'space-between' }]}>
             <Text style={[styles.normalText, { marginLeft: 10 }]}>
                 {item.item.displayName}
             </Text>
-            <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                {item.item.playing ? <Text style={[styles.normalText, {fontSize: 14}]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                {item.item.playing ? <Text style={[styles.normalText, { fontSize: 14 }]}>
                     {moment(item.item.startedAt).format('HH:mm')}-
                     {item.item.duration > 0 ? moment(item.item.startedAt).add(item.item.duration, 'minutes').format('HH:mm') : null}
-                    </Text>:null}
+                </Text> : null}
                 <TouchableOpacity style={{
                     height: 40,
                     width: 40,
                     alignItems: 'center',
-                    justifyContent: 'center'}} onPress={() => console.log(item)}>
-                    <Icon name={item.item.playing ? 'ios-flash' : colors.noGoalIcon} 
+                    justifyContent: 'center'
+                }} onPress={() => console.log(item)}>
+                    <Icon name={item.item.playing ? 'ios-flash' : colors.noGoalIcon}
                         color={item.item.playing ? colors.tigerOrange : colors.normalText} size={40} />
                 </TouchableOpacity>
             </View>
         </View>
     )
-    
+
     _renderPendingUser = (item) => (
-        <View key={item.key} style={[styles.listItem, {justifyContent: 'space-between'}]} onPress={() => console.log(item)}>
+        <View key={item.key} style={[styles.listItem, { justifyContent: 'space-between' }]} onPress={() => console.log(item)}>
             <Text style={[styles.normalText, { marginLeft: 10 }]}>
                 {item.item.displayName}
             </Text>
-            <View style={{flexDirection: 'row'}}>
+            <View style={{ flexDirection: 'row' }}>
                 <TouchableOpacity onPress={() => this.acceptPendingRequest(item.item)}>
                     <Icon name='ios-checkmark-circle-outline' color='green' size={40} />
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => this.deleteRelationship(item.item)} style={{marginLeft:15}} >
-                    <Icon name='ios-close-circle-outline' color='red' size={40}  />
+                <TouchableOpacity onPress={() => this.deleteRelationship(item.item)} style={{ marginLeft: 15 }} >
+                    <Icon name='ios-close-circle-outline' color='red' size={40} />
                 </TouchableOpacity>
             </View>
         </View>
     )
-        
+
     _renderRequestedUser = (item) => (
         <View key={item.key} style={styles.listItem} onPress={() => console.log(item)}>
             <Text style={[styles.normalText, { marginLeft: 10 }]}>
@@ -231,24 +238,24 @@ export default class Team extends Component {
     )
 
     _renderSeparator = () => (
-        <View style={{width: Screen.width-30, height: 1, backgroundColor: colors.tigerOrange}} />
+        <View style={{ width: Screen.width - 30, height: 1, backgroundColor: colors.tigerOrange }} />
     )
-    
+
     _renderPendingHeader = () => (
         <View style={styles.listItem}>
-            <Text style={[styles.normalText, {fontWeight: 'bold'}]}>Pending</Text>
+            <Text style={[styles.normalText, { fontWeight: 'bold' }]}>Pending</Text>
         </View>
     )
-    
+
     _renderRequestedHeader = () => (
         <View style={styles.listItem}>
-            <Text style={[styles.normalText, {fontWeight: 'bold'}]}>Requested</Text>
+            <Text style={[styles.normalText, { fontWeight: 'bold' }]}>Requested</Text>
         </View>
     )
-    
+
     _renderCircleHeader = () => (
         <View style={styles.listItem}>
-            <Text style={[styles.normalText, {fontWeight: 'bold'}]}>Your Circle</Text>
+            <Text style={[styles.normalText, { fontWeight: 'bold' }]}>Your Circle</Text>
         </View>
     )
 
@@ -257,33 +264,38 @@ export default class Team extends Component {
             <View style={styles.container}>
                 {this.state.user == null || this.state.user.email == null ? <NoTeam auth={(user) => this._checkUser(user)} /> :
                     <View style={{ flex: 1 }}>
-                        <Text style={styles.normalText}>Signed in as {this.state.user.email}</Text>
+                        <View style={{ flexDirection: 'row' }}>
+                            <Text style={[styles.normalText]}>Signed in as </Text>
+                            <TouchableOpacity onPress={() => this.setState({ showOptions: true })}>
+                                <Text style={[styles.normalText, { color: colors.tigerOrange }]}>{this.state.user.email}</Text>
+                            </TouchableOpacity>
+                        </View>
                         <View style={{ flex: 1, marginTop: 15 }}>
-                        <FlatList data={this.state.friends}
-                            keyExtractor={item => item.key}
-                            renderItem={this._renderUser}
-                            ListHeaderComponent={this._renderCircleHeader}
-                            ListFooterComponent={this.renderFooter}
-                            ItemSeparatorComponent={this._renderSeparator}                         
-                            showsVerticalScrollIndicator={false}
-                            style={[styles.flatList, {maxHeight: (this.state.friends.length+2)*50}]}
-                            contentContainerStyle={{ justifyContent: 'center', alignItems: 'center' }} />
-                        {this.state.pending.length > 0 ? 
-                        <FlatList data={this.state.pending}
-                            keyExtractor={item => item.key}
-                            renderItem={this._renderPendingUser}
-                            ListHeaderComponent={this._renderPendingHeader}
-                            showsVerticalScrollIndicator={false}
-                            style={[styles.flatList, {maxHeight: (this.state.pending.length+2)*50}]}
-                            contentContainerStyle={{ justifyContent: 'center', alignItems: 'center' }} /> : null}
-                        {this.state.requested.length > 0 ? 
-                        <FlatList data={this.state.requested}
-                            keyExtractor={item => item.key}
-                            renderItem={this._renderRequestedUser}
-                            ListHeaderComponent={this._renderRequestedHeader}
-                            showsVerticalScrollIndicator={false}
-                            style={[styles.flatList, {maxHeight: (this.state.requested.length+2)*50}]}
-                            contentContainerStyle={{ justifyContent: 'center', alignItems: 'center' }} /> : null}
+                            <FlatList data={this.state.friends}
+                                keyExtractor={item => item.key}
+                                renderItem={this._renderUser}
+                                ListHeaderComponent={this._renderCircleHeader}
+                                ListFooterComponent={this.renderFooter}
+                                ItemSeparatorComponent={this._renderSeparator}
+                                showsVerticalScrollIndicator={false}
+                                style={[styles.flatList, { maxHeight: (this.state.friends.length + 2) * 50 }]}
+                                contentContainerStyle={{ justifyContent: 'center', alignItems: 'center' }} />
+                            {this.state.pending.length > 0 ?
+                                <FlatList data={this.state.pending}
+                                    keyExtractor={item => item.key}
+                                    renderItem={this._renderPendingUser}
+                                    ListHeaderComponent={this._renderPendingHeader}
+                                    showsVerticalScrollIndicator={false}
+                                    style={[styles.flatList, { maxHeight: (this.state.pending.length + 2) * 50 }]}
+                                    contentContainerStyle={{ justifyContent: 'center', alignItems: 'center' }} /> : null}
+                            {this.state.requested.length > 0 ?
+                                <FlatList data={this.state.requested}
+                                    keyExtractor={item => item.key}
+                                    renderItem={this._renderRequestedUser}
+                                    ListHeaderComponent={this._renderRequestedHeader}
+                                    showsVerticalScrollIndicator={false}
+                                    style={[styles.flatList, { maxHeight: (this.state.requested.length + 2) * 50 }]}
+                                    contentContainerStyle={{ justifyContent: 'center', alignItems: 'center' }} /> : null}
                         </View>
                     </View>}
                 <Modal isVisible={this.state.showAlert}
@@ -295,6 +307,17 @@ export default class Team extends Component {
                         cancel={() => this.setState({ showAlert: false })}
                         add={(user) => this._addUser(user)}
                         user={this.state.user} />
+                </Modal>
+                <Modal isVisible={this.state.showOptions}
+                    onBackdropPress={() => this.setState({ showOptions: false })}
+                    onBackButtonPress={() => this.setState({ showOptions: false })}
+                    useNativeDriver={true}
+                    style={{ justifyContent: 'flex-end' }}>
+                    <View style={styles.alertBox}>
+                        <TouchableOpacity onPress={() => this.signOut()} style={{ width: Screen.width, alignItems: 'center' }}>
+                            <Text style={[styles.normalText, {fontWeight: 'bold'}]}>Sign out</Text>
+                        </TouchableOpacity>
+                    </View>
                 </Modal>
             </View>
         )
@@ -325,5 +348,16 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 15,
         flexDirection: 'row',
-    }
+    },
+    alertBox: {
+        position: 'absolute',
+        width: Screen.width-40,
+        backgroundColor: 'white',
+        elevation: 6,
+        alignSelf: 'center',
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'space-around',
+        padding: 15
+    },
 });

@@ -147,7 +147,10 @@ export default class Timeline extends Component {
 
     _flashPress() {
         const now = new Date();
-        const userKey = auth.currentUser.uid
+        let userKey = null; 
+        if (auth.currentUser != null) {
+            userKey= auth.currentUser.uid
+        }
 
         const session = {
             userKey,

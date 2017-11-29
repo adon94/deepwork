@@ -20,22 +20,28 @@ export default class NoTeam extends Component {
 
         this.state = {
             id: deviceInfo.getUniqueID(),
-            showAlert: false
+            showAlert: false,
+            alertToShow: <CircleAlert signup={true} authorize={(user) => this._signUp(user)} />
         }
     }
 
-    _signIn() {
-        auth.signInWithEmailAndPassword('adam@tigertime.io', 'password').then(() => {
+    _signInPress() {
+        this.state.alertToShow = <CircleAlert signup={false} authorize={(user) => this._signIn(user)} />
+        this.setState({showAlert:true});
+    }
+
+    _signIn(user) {
+        auth.signInWithEmailAndPassword(user.email, user.password).then(() => {
             this.props.auth();
         }).catch((error) => {
-            // Handle Errors here.
             const errorCode = error.code;
             const errorMessage = error.message;
-            // ...
         });
+        this.setState({ showAlert: false });
     }
 
     _signUpPress() {
+        this.state.alertToShow = <CircleAlert signup={true} authorize={(user) => this._signUp(user)} />
         this.setState({ showAlert: true });
     }
 
@@ -94,7 +100,7 @@ export default class NoTeam extends Component {
                     <TouchableOpacity style={styles.actionButton}>
                         <Text style={styles.actionText}>Join a team</Text>
                     </TouchableOpacity> */}
-                    <TouchableOpacity onPress={() => this._signIn()} style={styles.actionButton}>
+                    <TouchableOpacity onPress={() => this._signInPress()} style={styles.actionButton}>
                         <Text style={styles.actionText}>Log in</Text>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => this._signUpPress()} style={styles.actionButton}>
@@ -109,7 +115,7 @@ export default class NoTeam extends Component {
                         onBackButtonPress={() => this.setState({ showAlert: false })}
                         useNativeDriver={true}
                         style={{ justifyContent: 'flex-end' }}>
-                        <CircleAlert authorize={(user) => this._signUp(user)} />
+                        {this.state.alertToShow}
                     </Modal>
                 </View>
             </View>
