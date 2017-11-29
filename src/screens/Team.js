@@ -145,7 +145,6 @@ export default class Team extends Component {
                     let friend = childSnapshot.val();
                     friend.key = childSnapshot.key;
                     friend.relKey = element.key
-                    console.log(friend)
                     this.updateUserInList(friend, arr);
                 });
                 this.setState(this.state)
@@ -200,21 +199,20 @@ export default class Team extends Component {
                     {moment(item.item.startedAt).format('HH:mm')}-
                     {item.item.duration > 0 ? moment(item.item.startedAt).add(item.item.duration, 'minutes').format('HH:mm') : null}
                 </Text> : null}
-                <TouchableOpacity style={{
+                <View style={{
                     height: 40,
                     width: 40,
                     alignItems: 'center',
-                    justifyContent: 'center'
-                }} onPress={() => console.log(item)}>
+                    justifyContent: 'center'}}>
                     <Icon name={item.item.playing ? 'ios-flash' : colors.noGoalIcon}
                         color={item.item.playing ? colors.tigerOrange : colors.normalText} size={40} />
-                </TouchableOpacity>
+                </View>
             </View>
         </View>
     )
 
     _renderPendingUser = (item) => (
-        <View key={item.key} style={[styles.listItem, { justifyContent: 'space-between' }]} onPress={() => console.log(item)}>
+        <View key={item.key} style={[styles.listItem, { justifyContent: 'space-between' }]}>
             <Text style={[styles.normalText, { marginLeft: 10 }]}>
                 {item.item.displayName}
             </Text>
@@ -230,7 +228,7 @@ export default class Team extends Component {
     )
 
     _renderRequestedUser = (item) => (
-        <View key={item.key} style={styles.listItem} onPress={() => console.log(item)}>
+        <View key={item.key} style={styles.listItem}>
             <Text style={[styles.normalText, { marginLeft: 10 }]}>
                 {item.item.displayName}
             </Text>

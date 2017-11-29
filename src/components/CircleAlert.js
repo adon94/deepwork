@@ -45,13 +45,14 @@ export default class CircleAlert extends Component {
     render() {
         return (
             <View style={[styles.alertBox]}>
-                {this.props.signup ? <View><Text style={styles.subText}>Display Name</Text>
+                {this.props.signup ? <View>
+                    <Text style={styles.subText}>Display Name</Text>
                 <TextInput
                     ref='input'
                     style={[styles.addText, { width: 200, margin: 5 }]}
                     underlineColorAndroid='transparent'
                     placeholderTextColor={colors.subText}
-                    placeholder='Email'
+                    placeholder='-'
                     autoCapitalize='none'
                     value={this.state.displayName}
                     onChangeText={displayName => this.setState({ displayName })} /></View> : null}
@@ -61,7 +62,7 @@ export default class CircleAlert extends Component {
                     style={[styles.addText, { width: 200, margin: 5 }]}
                     underlineColorAndroid='transparent'
                     placeholderTextColor={colors.subText}
-                    placeholder='Email'
+                    placeholder='-'
                     autoCapitalize='none'
                     value={this.state.email}
                     onChangeText={email => this.setState({ email })} />
@@ -71,7 +72,7 @@ export default class CircleAlert extends Component {
                     style={[styles.addText, { width: 200, margin: 5 }]}
                     underlineColorAndroid='transparent'
                     placeholderTextColor={colors.subText}
-                    placeholder='Password'
+                    placeholder='-'
                     autoCapitalize='none'
                     secureTextEntry={true}
                     maxLength={15}
