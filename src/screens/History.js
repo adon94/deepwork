@@ -22,7 +22,7 @@ import Interactable from 'react-native-interactable';
 import Modal from 'react-native-modal';
 
 import Level from '../components/Level';
-import { colors, formatSeconds } from '../constants';
+import { colors, formatMinutes } from '../constants';
 import { auth, database } from '../firebase';
 import NoHistory from '../components/NoHistory';
 import Bubble from '../components/Bubble';
@@ -46,7 +46,8 @@ export default class History extends Component {
             totalMinutes: 0,
             showAlert: false,
             days: [],
-            level: levels[0]
+            level: levels[0],
+            progress: 0
         }
         this.userRef = database.ref('users/').child(id);
         this.alertToShow = <Options />;
@@ -69,13 +70,14 @@ export default class History extends Component {
         userMinutesRef.on('value', (snapshot) => {
             const totalMinutes = snapshot.val();
             if(totalMinutes != null) {
+                const levelMinutes = (totalMinutes/60);
                 let level = levels[0];
-                let progress = 0
+                let progress = 0;
                 levels.every((element, index) => {
-                    if (element.minutes > totalMinutes) {
+                    if (element.minutes > levelMinutes) {
                         level = levels[index-1];
 
-                        progress = (totalMinutes-level.minutes)/(element.minutes-level.minutes)
+                        progress = (levelMinutes-level.minutes)/(element.minutes-level.minutes)
                         console.log(progress);
                         return false;
                     } else {
@@ -199,7 +201,7 @@ export default class History extends Component {
         <View style={styles.dayStyle}>
             <Text style={styles.dateText}>{item.date}</Text>
             <Text>{item.sessions.length} sessions</Text>
-            <Text>{formatSeconds((item.time/60))} hours total</Text>
+            <Text>{formatMinutes((item.time))} hours total</Text>
         </View>
     );
 
@@ -210,7 +212,7 @@ export default class History extends Component {
                     <Level level={this.state.level} progress={this.state.progress} />
                     <View style={styles.loggedBox}>
                         <Text style={{ color: colors.tigerOrange, fontWeight: 'bold', fontSize: 18, marginRight: 2 }}>
-                            {formatSeconds(this.state.totalMinutes)}
+                            {formatMinutes(this.state.totalMinutes)}
                         </Text>
                         <Text style={{ color: colors.normalText, fontWeight: 'bold', fontSize: 18, marginLeft: 2 }}>Hours</Text>
                     </View>

@@ -29,18 +29,17 @@ const topBarHeight = Platform.OS === 'ios' ? 60 : 50;
 export default class MainView extends Component {
     constructor(props) {
         super(props);
-
         this._deltaX = new Animated.Value(-Screen.width);
         this._deltaY = new Animated.Value(Screen.height);
         this._animatedValue = new Animated.Value(0);
-
         this.state = {
             sessionPanel: null,
             playing: false
         }
     }
 
-    componentWillMount() {
+    componentDidMount() {
+        this.setState(this.state)
     }
 
     _openSession(sesh) {
@@ -101,9 +100,7 @@ export default class MainView extends Component {
                 <Animated.View style={[styles.container, {transform: [{
                                         scale: this._deltaY.interpolate({
                                             inputRange: [ 0, Screen.height],
-                                            outputRange: [0.97, 1]
-                                        }),
-                                    }]}]}>
+                                            outputRange: [0.97, 1]})}]}]}>
                     <Animated.View style={[styles.topBar]}>
                         <View style={{ flexDirection: 'row', width: Screen.width, justifyContent: 'center', alignItems: 'flex-end' }}>
                             <View style={styles.iconContainer}>
@@ -114,15 +111,10 @@ export default class MainView extends Component {
                                     transform: [{
                                         scale: this._deltaX.interpolate({
                                             inputRange: [-Screen.width * 2, -Screen.width, 0],
-                                            outputRange: [0.6, 0.6, 1]
-                                        }),
-                                    }]
-                                }, {
-                                    opacity: this._deltaX.interpolate({
+                                            outputRange: [0.6, 0.6, 1]}),}]},
+                                            {opacity: this._deltaX.interpolate({
                                         inputRange: [-Screen.width * 2, -Screen.width, 0],
-                                        outputRange: [0.6, 0.6, 1]
-                                    })
-                                }]}>
+                                        outputRange: [0.6, 0.6, 1]})}]}>
                                     Overview
                             </Animated.Text>
                             </TouchableOpacity>
@@ -131,15 +123,10 @@ export default class MainView extends Component {
                                     transform: [{
                                         scale: this._deltaX.interpolate({
                                             inputRange: [-Screen.width * 2, -Screen.width, 0],
-                                            outputRange: [0.6, 1, 0.6]
-                                        }),
-                                    }]
-                                }, {
-                                    opacity: this._deltaX.interpolate({
+                                            outputRange: [0.6, 1, 0.6]})}]},
+                                 {opacity: this._deltaX.interpolate({
                                         inputRange: [-Screen.width * 2, -Screen.width, 0],
-                                        outputRange: [0.6, 1, 0.6,]
-                                    })
-                                }]}>
+                                        outputRange: [0.6, 1, 0.6,]})}]}>
                                     Today
                                 </Animated.Text>
                             </TouchableOpacity>
@@ -148,15 +135,10 @@ export default class MainView extends Component {
                                     transform: [{
                                         scale: this._deltaX.interpolate({
                                             inputRange: [-Screen.width * 2, -Screen.width, 0],
-                                            outputRange: [1, 0.6, 0.6]
-                                        }),
-                                    }]
-                                }, {
-                                    opacity: this._deltaX.interpolate({
+                                            outputRange: [1, 0.6, 0.6]})}]}, 
+                                {opacity: this._deltaX.interpolate({
                                         inputRange: [-Screen.width * 2, -Screen.width, 0],
-                                        outputRange: [1, 0.6, 0.6,]
-                                    })
-                                }]}>
+                                        outputRange: [1, 0.6, 0.6,]})}]}>
                                     Circle
                             </Animated.Text>
                             </TouchableOpacity>
@@ -178,45 +160,21 @@ export default class MainView extends Component {
                             transform: [{
                                 scale: this._deltaX.interpolate({
                                     inputRange: [-Screen.width * 2, -Screen.width, 0],
-                                    outputRange: [0.95, 0.95, 1]
-                                }),
-                            }]
-                        }, {
-                            // opacity: this._deltaX.interpolate({
-                            //     inputRange: [-Screen.width * 2, -Screen.width, 0],
-                            //     outputRange: [0.6, 0.6, 1]
-                            // })
-                        }]}>
+                                    outputRange: [0.95, 0.95, 1]})}]}]}>
                             <History />
                         </Animated.View>
                         <Animated.View style={[styles.viewContainer, {
                             transform: [{
                                 scale: this._deltaX.interpolate({
                                     inputRange: [-Screen.width * 2, -Screen.width, 0],
-                                    outputRange: [0.95, 1, 0.95]
-                                }),
-                            }]
-                        }, {
-                            // opacity: this._deltaX.interpolate({
-                            //     inputRange: [-Screen.width * 2, -Screen.width, 0],
-                            //     outputRange: [0.6, 1, 0.6,]
-                            // })
-                        }]}>
+                                    outputRange: [0.95, 1, 0.95]})}]}]}>
                             <Timeline openSession={(session) => this._openSession(session)} />
                         </Animated.View>
                         <Animated.View style={[styles.viewContainer, {
                             transform: [{
                                 scale: this._deltaX.interpolate({
                                     inputRange: [-Screen.width * 2, -Screen.width, 0],
-                                    outputRange: [1, 0.95, 0.95]
-                                }),
-                            }]
-                        }, {
-                            // opacity: this._deltaX.interpolate({
-                            //     inputRange: [-Screen.width * 2, -Screen.width, 0],
-                            //     outputRange: [1, 0.6, 0.6,]
-                            // })
-                        }]}>
+                                    outputRange: [1, 0.95, 0.95]})}]}]}>
                             <Team />
                         </Animated.View>
                     </Interactable.View>

@@ -40,37 +40,23 @@ export default class GoalSelect extends Component {
     }
 
     getGoals() {
-        const userkey = auth.currentUser.uid;
-        const goalRef = database.ref('goals').orderByChild('userKey').equalTo(userkey);
-        goalRef.on('value', (snapshot) => {
-            let goals = [];
-            snapshot.forEach(childSnapshot => {
-                let goal = childSnapshot.val();
-                goal.key = childSnapshot.key;
-                goals.push(goal);
-            })
-            this.setState({ goals })
-        });
-        // const userRef = database.ref('users/').child(this.state.id);
-        
-        // userRef.child('goals').on('value', (snapshot) => {
-
-        //     let goals = [];
-        //     snapshot.forEach(childSnapshot => {
-        //         let goal = childSnapshot.val();
-        //         goal.key = childSnapshot.key;
-
-        //         goals.push(goal);
-        //     })
-
-        //     this.setState({ goals })
-        // });
+        const currentUser = auth.currentUser;
+        if (currentUser != null) {
+            const userkey = currentUser.uid;
+            const goalRef = database.ref('goals').orderByChild('userKey').equalTo(userkey);
+            goalRef.on('value', (snapshot) => {
+                let goals = [];
+                snapshot.forEach(childSnapshot => {
+                    let goal = childSnapshot.val();
+                    goal.key = childSnapshot.key;
+                    goals.push(goal);
+                })
+                this.setState({ goals })
+            });
+        }
     }
 
     addGoal(goal) {
-        // const userRef = database.ref('users/').child(this.state.id).child('goals').push();
-        // userRef.set(goal);
-
         const goalRef = database.ref('goals').push();
         goalRef.set(goal)
 

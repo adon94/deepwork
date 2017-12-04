@@ -6,7 +6,7 @@ import {
     View
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { colors, formatSeconds } from '../constants';
+import { colors, formatMinutes } from '../constants';
 import moment from 'moment';
 import Modal from 'react-native-modal';
 import deviceInfo from 'react-native-device-info';
@@ -37,7 +37,7 @@ export default class Bubble extends Component {
                         {moment(this.props.item.realStart).format('HH:mm')}-{moment(this.props.item.realEnd).format('HH:mm')}
                     </Text> : null}
                     {this.props.item.totalMinutes != null ? <Text style={styles.subText}>
-                        {formatSeconds(this.props.item.totalMinutes)}</Text> : null}
+                        {formatMinutes(this.props.item.totalMinutes)}</Text> : null}
                 </TouchableOpacity>
             </View>
         )

@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import {
+    Dimensions,
+    Platform,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -13,6 +15,11 @@ import Modal from 'react-native-modal';
 import CircleAlert from './CircleAlert';
 import firebase from 'react-native-firebase';
 import deviceInfo from 'react-native-device-info';
+
+const Screen = {
+    width: Dimensions.get('window').width,
+    height: Dimensions.get('window').height
+}
 
 export default class NoTeam extends Component {
     constructor(props) {
@@ -36,6 +43,7 @@ export default class NoTeam extends Component {
         }).catch((error) => {
             const errorCode = error.code;
             const errorMessage = error.message;
+            console.log(errorMessage)
         });
         this.setState({ showAlert: false });
     }
@@ -46,15 +54,25 @@ export default class NoTeam extends Component {
     }
 
     _signUp(user) {
-        const userRef = database.ref('users').child(auth.currentUser.uid);
-        const credential = firebase.auth.EmailAuthProvider.credential(user.email, user.password);
-        auth.currentUser.linkWithCredential(credential).then((fuser) => {
-            userRef.child('displayName').set(user.displayName);
-            userRef.child('email').set(user.email);
-            this.props.auth();
-          }, (error) => {
-            console.log("Error upgrading anonymous account", error);
-          });
+
+        if (auth.currentUser != null) {
+            const credential = firebase.auth.EmailAuthProvider.credential(user.email, user.password);
+            auth.currentUser.linkWithCredential(credential).then((fuser) => {
+                userRef.child('displayName').set(user.displayName);
+                userRef.child('email').set(user.email);
+                this.props.auth();
+              }, (error) => {
+                console.log("Error upgrading anonymous account", error);
+              });
+        } else {
+            auth.createUserWithEmailAndPassword(user.email, user.password).then((response) => {
+                console.log(response)
+                const userRef = database.ref('users').child(response.uid);
+                userRef.child('displayName').set(user.displayName);
+                userRef.child('email').set(user.email);
+                this.props.auth();
+            });
+        }
 
         // auth.createUserWithEmailAndPassword(user.email, user.password)//.then(() => {
             //none of the below is happening. not sure why
@@ -109,12 +127,13 @@ export default class NoTeam extends Component {
                     {/* <View style={styles.actionButton}>
                         <Text style={styles.actionText}>Coming soon</Text>
                     </View> */}
-
                     <Modal isVisible={this.state.showAlert}
                         onBackdropPress={() => this.setState({ showAlert: false })}
                         onBackButtonPress={() => this.setState({ showAlert: false })}
                         useNativeDriver={true}
-                        style={{ justifyContent: 'flex-end' }}>
+                        style={{ justifyContent: 'center',
+                        alignItems: 'center',
+                        marginBottom: Platform.OS === 'ios' ? Screen.height*0.28 : 0}}>
                         {this.state.alertToShow}
                     </Modal>
                 </View>

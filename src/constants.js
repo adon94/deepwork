@@ -42,3 +42,24 @@ export const formatSeconds = (seconds) => {
 
     return m + ":" + s;
 }
+
+export const formatMinutes = (minutes) => {
+    minutes = Math.round(minutes);
+    let h = 0,
+        m = 0
+
+    if (minutes > 3600) {
+        h = Math.floor(minutes / 3600);
+        minutes = minutes - (h * 3600);
+        m = Math.floor(minutes/60);
+    } else {
+        h = 0
+        m = Math.floor(minutes/60);
+    }
+
+        h = h.toString().length <= 1 ? "0" + h : h;
+        m = m.toString().length <= 1 ? "0" + m : m;
+
+        return h + ':' + m;
+
+}

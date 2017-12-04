@@ -20,6 +20,8 @@ import { colors, formatSeconds } from '../constants';
 import { database, auth } from '../firebase';
 import FocusBoost from '../components/FocusBoost';
 import GoalSelect from '../components/GoalSelect';
+import levels from '../data/levels';
+import Level from '../components/Level';
 
 const Screen = {
     width: Dimensions.get('window').width,
@@ -67,7 +69,10 @@ export default class SessionTime extends Component {
             focusMinutes: null,
             focusLogged: null,
             appState: AppState.currentState,
-            lostFocus: false
+            lostFocus: false,
+            level: levels[0],
+            progress: 0,
+            showEnd: false
         }
     }
 
@@ -107,17 +112,49 @@ export default class SessionTime extends Component {
                 focusMinutes: null,
                 focusLogged: null,
                 appState: AppState.currentState,
-                lostFocus: false
+                lostFocus: false,
+                level: levels[0],
+                progress: 0,
+                showEnd: false
             });
+            this.listenForLevels();
         }
     }
 
     componentDidMount() {
-        AppState.addEventListener('change', this._handleAppStateChange);
+        // AppState.addEventListener('change', this._handleAppStateChange);
+        this.listenForLevels();        
+    }
+
+    listenForLevels() {
+        if (this.state.session.userKey != null) {
+            const userRef = database.ref('users');
+            userRef.child(this.state.session.userKey).child('totalMinutes').on('value', (snapshot) => {
+                const userMinutes = snapshot.val();
+                if(userMinutes != null) {
+                    const levelMinutes =  (userMinutes/60);
+                    let level = levels[0];
+                    let progress = 0
+                    levels.every((element, index) => {
+                        if (element.minutes > levelMinutes) {
+                            level = levels[index-1];
+    
+                            progress = (levelMinutes-level.minutes)/(element.minutes-level.minutes)
+                            console.log(progress);
+                            return false;
+                        } else {
+                            return true;
+                        }
+                        
+                    })
+                    this.setState({level, progress})
+                }
+            })
+        }
     }
 
     componentWillUnmount() {
-        AppState.removeEventListener('change', this._handleAppStateChange);
+        // AppState.removeEventListener('change', this._handleAppStateChange);
     }
 
     _handleAppStateChange = (nextAppState) => {
@@ -125,28 +162,29 @@ export default class SessionTime extends Component {
         // if(nextAppState === 'inactive' && this.state.playing) {
         //     console.log(nextAppState);
         // }
+        console.log(nextAppState)
 
-        if (this.state.appState.match(/inactive|background/) && nextAppState === 'active' && this.state.paused) {
-          console.log('App has come to the foreground!')
-          this.props.blackout(false);
-          Animated.timing(this._animatedValue, {
-              toValue: 0,
-              duration: 2000
-          }).start();
+        if (this.state.appState === 'background' && nextAppState === 'active' && this.state.paused) {
+            console.log('App has come to the foreground!')
+            this.props.blackout(false);
+            Animated.timing(this._animatedValue, {
+                toValue: 0,
+                duration: 2000
+            }).start();
 
-          if (this.state.lostFocus) {
-              const lostFocusTime = new Date() - new Date(this.state.pausedAt);
-            //   const secondsLost = (lostFocusTime/1000);
-              this.state.focusTimeLost = this.state.focusTimeLost + (lostFocusTime*10);
-              console.log('lost ', formatSeconds(this.state.focusLogged/1000))
-          }
+            if (this.state.lostFocus) {
+                const lostFocusTime = new Date() - new Date(this.state.pausedAt);
+                //   const secondsLost = (lostFocusTime/1000);
+                this.state.focusTimeLost = this.state.focusTimeLost + (lostFocusTime * 10);
+                console.log('lost ', formatSeconds(this.state.focusLogged / 1000))
+            }
 
-          this.setState({appState: nextAppState, lostFocus: false});
-        //   this.pauseSession();
+            this.setState({ appState: nextAppState, lostFocus: false });
+            //   this.pauseSession();
         } else if (nextAppState === 'background' && this.state.playing) {
             clearInterval(this.state.interval);
             console.log('focus boost: ', this.state.focusMinutes > this.state.focusLogged)
-            this.setState({ 
+            this.setState({
                 lostFocus: this.state.focusMinutes > this.state.focusLogged,
                 appState: nextAppState,
                 playing: false,
@@ -154,7 +192,7 @@ export default class SessionTime extends Component {
                 pausedAt: new Date().toISOString()
             });
         } else {
-            this.setState({appState: nextAppState});
+            this.setState({ appState: nextAppState });
         }
     }
 
@@ -211,7 +249,7 @@ export default class SessionTime extends Component {
         this.state.interval = setInterval(() => {
 
             let timeLogged = ((new Date() - new Date(this.state.session.realStart) - this.state.pauseDuration - this.state.focusTimeLost) / 1000);
-            
+
             if (timeLogged < 0) {
                 timeLogged = 0;
             }
@@ -244,7 +282,7 @@ export default class SessionTime extends Component {
                 });
                 this.state.session.userKey = auth.currentUser.uid;
             }
-            
+
             const realStart = new Date().toISOString();
             this.state.session.realStart = realStart;
             this.state.resumeStart = realStart;
@@ -283,6 +321,7 @@ export default class SessionTime extends Component {
 
     endSession() {
         clearInterval(this.state.interval);
+        this.showEndModal()
         const realEnd = new Date().toISOString();
 
         const sessionRef = database.ref('sessions');
@@ -307,12 +346,13 @@ export default class SessionTime extends Component {
             if (snapshot.val() == null) {
                 userRef.child(this.state.session.userKey).child('totalMinutes').set(Math.round(this.state.timeLogged / 60));
             } else {
-                const totalMinutes = snapshot.val() + (Math.round(this.state.timeLogged / 60));
+                const totalMinutes = parseInt(snapshot.val()) + (Math.round(this.state.timeLogged / 60));
                 userRef.child(this.state.session.userKey).child('totalMinutes').set(totalMinutes);
             }
         });
         sessionRef.child(this.state.session.key).child('realEnd').set(realEnd);
-        sessionRef.child(this.state.session.key).child('timeLogged').set(this.state.timeLogged);
+        sessionRef.child(this.state.session.key).child('pauseDuration').set(Math.round(this.state.pauseDuration/1000));
+        sessionRef.child(this.state.session.key).child('timeLogged').set(Math.round(this.state.timeLogged));
         this.state.session.realEnd = realEnd;
         let session = this.state.session;
         session.realEnd = realEnd;
@@ -375,6 +415,10 @@ export default class SessionTime extends Component {
         this.setState({ showAlert: false });
     }
 
+    showEndModal() {
+        this.setState({showEnd: true})
+    }
+
     render() {
         const backgroundColorAnim = this._animatedValue.interpolate({
             inputRange: [0, 100],
@@ -423,10 +467,10 @@ export default class SessionTime extends Component {
                     {this.state.completedTime && !this.state.countUp ? '+' : null}{formatSeconds(this.state.timer)}</Animated.Text>
                 {/* {this.state.completedTime ? <Animated.Text style={[styles.normalText, { color: textColorAnim, marginTop: 0 }]}>(overtime)</Animated.Text> : null} */}
 
-                {this.state.playing ? <TouchableOpacity disabled={this.state.focusMinutes > this.state.focusLogged} onPress={() => this.pauseSession()} 
+                {this.state.playing ? <TouchableOpacity disabled={this.state.focusMinutes > this.state.focusLogged} onPress={() => this.pauseSession()}
                     style={[styles.actionButton]}>
-                    {this.state.playing && this.state.focusMinutes <= this.state.focusLogged ? <Text style={[styles.normalText, {color: colors.tigerOrange}]}>Pause</Text> : 
-                    <Text style={[styles.normalText, {color: colors.tigerOrange}]}>No Pausing</Text> }
+                    {this.state.playing && this.state.focusMinutes <= this.state.focusLogged ? <Text style={[styles.normalText, { color: colors.tigerOrange }]}>Pause</Text> :
+                        <Text style={[styles.normalText, { color: colors.tigerOrange }]}>No Pausing</Text>}
                 </TouchableOpacity> : null}
                 {this.state.session.realEnd == null ?
                     <View style={{ alignItems: 'center' }}>
@@ -436,7 +480,7 @@ export default class SessionTime extends Component {
                             <Animated.Text style={[styles.normalText, { color: colors.tigerOrange, position: 'absolute', opacity: endAnim }]}>
                                 End</Animated.Text>
                         </AnimatedTouchable>
-                        <TouchableOpacity disabled={this.state.playing} onPress={() => this._openFocusBoost()}>
+                        {/* <TouchableOpacity disabled={this.state.playing} onPress={() => this._openFocusBoost()}>
                             {this.state.focusMinutes == null ?
 
                                 <Text style={[styles.normalText, { color: colors.tigerOrange }]}>
@@ -446,7 +490,7 @@ export default class SessionTime extends Component {
                                 <Text style={[styles.normalText, { color: colors.tigerOrange }]}>
                                     Focus Boost: {this.state.focusMinutes > this.state.focusLogged ? formatSeconds(this.state.focusMinutes - this.state.focusLogged) : 'Complete'}
                                 </Text>}
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
                         {this.state.focusMinutes != null ?
                             <Bar width={300}
                                 height={1}
@@ -474,6 +518,20 @@ export default class SessionTime extends Component {
                     useNativeDriver={true}
                     style={{ justifyContent: 'flex-end' }}>
                     {this.alertToShow}
+                </Modal>
+                <Modal isVisible={this.state.showEnd}
+                    onBackdropPress={() => this.setState({ showEnd: false })}
+                    onBackButtonPress={() => this.setState({ showEnd: false })}
+                    useNativeDriver={true}
+                    style={{ justifyContent: 'center' }}>
+                    <View style={styles.alertBox}>
+                        <Level level={this.state.level} progress={this.state.progress} />
+                        <Text style={styles.normalText}>+{formatSeconds(this.state.timeLogged)} logged</Text>
+                        <Text style={styles.normalText}>Rating: {100 - Math.round(((this.state.pauseDuration/1000)/this.state.timeLogged)*100)}%</Text>
+                        <TouchableOpacity onPress={() => this.setState({showEnd: false})}>
+                            <Text style={[styles.normalText, {color:colors.tigerOrange}]}>Close</Text>
+                        </TouchableOpacity>
+                    </View>
                 </Modal>
             </Animated.View>
         )
@@ -514,5 +572,17 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         // backgroundColor: 'pink',
         // opacity: 0.5
+    },
+    alertBox: {
+        position: 'absolute',
+        width: Screen.width*0.7,
+        height: Screen.height*0.5,
+        backgroundColor: 'white',
+        elevation: 6,
+        alignSelf: 'center',
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'space-around',
+        padding: 15
     }
 });

@@ -150,6 +150,17 @@ export default class TigerAlert extends Component {
     render() {
         return (
             <View style={[styles.alertBox]}>
+                <Text style={styles.subText}>Session title</Text>
+                <TextInput
+                    ref='input'
+                    style={[styles.addText, {width: 200, margin: 5}]}
+                    underlineColorAndroid='transparent'
+                    autoCapitalize='words'
+                    placeholderTextColor={colors.tigerOrange}
+                    placeholder='(Optional)'
+                    maxLength={15}
+                    value={this.state.name}
+                    onChangeText={name => this.setState({name})}/>
                 <View style={{ width: 250, marginVertical: 10 }}>
                     <Text style={styles.normalText}>
                         {this.state.value == 0 ? 'No set duration' : this.formatDuration(parseFloat(this.state.value).toFixed(3))}
@@ -181,17 +192,6 @@ export default class TigerAlert extends Component {
                     <Text style={styles.subText}>Towards goal</Text>
                     <Text style={styles.addText}>{this.state.goal == null ? 'None' : this.state.goal.name}</Text>
                 </TouchableOpacity>
-                <Text style={styles.subText}>Session title</Text>
-                <TextInput
-                    ref='input'
-                    style={[styles.addText, {width: 200, margin: 5}]}
-                    underlineColorAndroid='transparent'
-                    autoCapitalize='words'
-                    placeholderTextColor={colors.tigerOrange}
-                    placeholder='None'
-                    maxLength={15}
-                    value={this.state.name}
-                    onChangeText={name => this.setState({name})}/>
                 <TouchableOpacity style={styles.actionButton} onPress={() => this._go()}>
                     <Text style={[styles.normalText, {color: 'white'}]}>Ok</Text>
                 </TouchableOpacity>

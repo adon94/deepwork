@@ -42,17 +42,17 @@ export default levels = [
   {
     "level": 9,
     "minutes": 816,
-    "name": "Wizard"
+    "name": "Elon Musk"
   },
   {
     "level": 10,
     "minutes": 972,
-    "name": "Jedi"
+    "name": "Professor X"
   },
   {
     "level": 11,
     "minutes": 1140,
-    "name": "Elon Musk"
+    "name": "Einstein"
   },
   {
     "level": 12,
@@ -62,12 +62,12 @@ export default levels = [
   {
     "level": 13,
     "minutes": 1512,
-    "name": "Professor X"
+    "name": "Jedi"
   },
   {
     "level": 14,
     "minutes": 1716,
-    "name": "Einstein"
+    "name": "Wizard"
   },
   {
     "level": 15,

@@ -80,12 +80,18 @@ export default class GoalCreate extends Component {
 
     _donePress() {
         if (auth.currentUser == null) {
-            auth.signInAnonymously().catch((error) => {
+            auth.signInAnonymously().then((response) => {
+                this.createGoal(response.uid);
+            }).catch((error) => {
                 console.log(error)
             });
+        } else {
+            this.createGoal(auth.currentUser.uid);
         }
 
-        const userKey = auth.currentUser.uid;
+    }
+
+    createGoal(userKey) {
         const goal = {
             userKey,
             name: this.state.name,
