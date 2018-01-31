@@ -1,16 +1,24 @@
+import { Dimensions } from 'react-native';
 import deviceInfo from 'react-native-device-info';
 
 export const id = deviceInfo.getUniqueID();
+export const Screen = {
+    width: Dimensions.get('window').width,
+    height: Dimensions.get('window').height
+}
 
 export const colors = {
-    normalText: '#444444',
+    normalText: '#141414',
     subText: '#AFAFAF',
-    tigerOrange: '#d35400',
+    tigerOrange: '#e67e22',//'#d35400',
     tigerRGB: 'rgba(211, 84, 0, 1)',
     paleTiger: '#FF9550',
     background: '#FFFFFF',
     gold: '#ffd700',
-    noGoalIcon: 'ios-flash-outline'
+    noGoalIcon: 'ios-flash-outline',
+    behindColor: '#e67e22',//'#d35400',
+    behindText: '#FFFFFF',
+    touchableText: '#2980b9',
 }
 
 export const formatSeconds = (seconds) => {
@@ -41,25 +49,4 @@ export const formatSeconds = (seconds) => {
     s = s.toString().length <= 1 ? "0" + s : s;
 
     return m + ":" + s;
-}
-
-export const formatMinutes = (minutes) => {
-    minutes = Math.round(minutes);
-    let h = 0,
-        m = 0
-
-    if (minutes > 3600) {
-        h = Math.floor(minutes / 3600);
-        minutes = minutes - (h * 3600);
-        m = Math.floor(minutes/60);
-    } else {
-        h = 0
-        m = Math.floor(minutes/60);
-    }
-
-        h = h.toString().length <= 1 ? "0" + h : h;
-        m = m.toString().length <= 1 ? "0" + m : m;
-
-        return h + ':' + m;
-
 }

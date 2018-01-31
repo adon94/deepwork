@@ -4,8 +4,6 @@ import { colors } from './src/constants';
 
 registerScreens();
 
-console.ignoredYellowBox = ['Remote debugger', 'Setting a timer', 'Warning: Each child in an array'];
-
 // const mainScreen = 'app.MainView';
 // const mainScreen = 'app.Main';
 // const mainScreen = 'app.SelectApp'
